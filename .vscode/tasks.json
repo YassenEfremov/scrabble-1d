@@ -14,7 +14,8 @@
                 "-std=c11",
                 "${file}",
                 "-o",
-                "${fileDirname}/${fileBasenameNoExtension}"
+                "${fileDirname}/${fileBasenameNoExtension}",
+                "-I."
             ],
             "options": {
                 "cwd": "${workspaceFolder}"
