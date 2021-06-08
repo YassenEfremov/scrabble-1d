@@ -72,7 +72,7 @@ void startingMenu() {
 	    		break;
 	    }
 	
-	} while (menu < 0 || menu > 5);
+	} while (menu < 0 || menu > 4);
 	
 	system("clear");
 }
