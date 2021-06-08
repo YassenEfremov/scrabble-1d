@@ -19,7 +19,7 @@ extern void gameSettings(int *letters, int *rounds) {
 		printf("Kolko bykwi jelaete: \n");
 		scanf("%d", &num_letters2);
 		
-		if(num_letters2 < 0 && num_letters2 > 27){
+		if(num_letters2 < 0 || num_letters2 > 27){
 			printf("nevalidno");
 			return;
 		}
@@ -29,7 +29,7 @@ extern void gameSettings(int *letters, int *rounds) {
 		printf("Kolko runda jelaete:  \n");
 		scanf("%d", &num_rounds2);
 		
-		if(num_rounds2 < 0 && num_rounds2 > 100){
+		if(num_rounds2 < 0 || num_rounds2 > 100){
 			printf("Nevalidno");
 			return;	
 		}
