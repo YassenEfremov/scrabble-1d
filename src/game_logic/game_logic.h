@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <time.h>
+#include <string.h>
 
 //  Funkciq za generirane na bykwi za edin round i printiraneto im
 extern void letter_generation(int letters){
