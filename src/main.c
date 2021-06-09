@@ -4,6 +4,7 @@
 
 #include "./game_logic/game_logic.h"
 #include "./game_settings/game_settings.h"
+#include "./dictionary_to_trie/trie_generation.h"
 
 
 // ============================================================================================= //
@@ -58,7 +59,11 @@ void startingMenu() {
 	    		break;
 			
 	    	case 3:
-                printf("trqbva da vuvedem dyma v rechnika"); // Tyk trqbva fynkciq za dobavqne na dyma v rechnika
+                // printf("trqbva da vuvedem dyma v rechnika"); // Tyk trqbva fynkciq za dobavqne na dyma v rechnika
+
+				//append_dict();
+				trie_generate();
+
 	    		break;
 			
 	    	case 4:
