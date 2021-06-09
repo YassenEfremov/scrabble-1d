@@ -14,34 +14,43 @@ extern void letter_generation(int letters){
         random_letter = (rand() % (122 - 97 + 1)) + 97; 
         array[i] = random_letter;
         printf("%c  | ", array[i]);
+	    
+   int flag = 0;
+    do{
+        flag = enter_and_check(array, letters);    // trqbva da go dovursha
+    }while ()
+}
+
+extern int enter_and_check(char ran_letters, int letters){
+    
+    char word[letters];
+            
+    printf("Enter word to play or enter '9' to skip this level:    ");
+    scanf("%s", &word);
+    
+    char quit_word[] = "9";
+    int flag = 0;    
+    
+    if(strcmp(word, quit_word) == 0){
+        return -1;
+    }
+    
+    for(int i = 0; word[i] != '\0'; i++){
+        for(int j = 0; ran_letters[j] != '\0'; j++){
+            
+            if(ran_letters[j] == word[i]){
+                flag = 1;
+                ran_letters[j] = ' ';
+                break;
+            }
+        }
+        
+        if(flag == 0){
+            return 0;
+        }
     }
 }
 
-extern void enter_and_check(char ran_letters[]){
-
-	char *word;
-	int flag = 0;
-	
-	printf("Enter word:  ");
-	scanf("%s", &word);
-	
-	
-		for(int i=0;  !=  ; i++){
-		printf("2\n");
-			for(int j=0; j < b - 1; j++){
-			printf("3\n");
-				if(word[i] == ran_letters[j]){
-					ran_letters[j] = ''; // za da mahna slychai v koito dymata na potrebitelq 									  izpolzva edna vykwa dva puti
-					flag = 1;
-					printf("4\n");
-			}
-				printf("1234\n");
-		}
-	}
-}
-
-
 extern void startGame(int letters, int rounds) {
     letter_generation(letters);
-    //enter_and_check(letters);
 }
