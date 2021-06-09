@@ -17,18 +17,31 @@ extern void letter_generation(int letters){
     }
 }
 
+extern void enter_and_check(char ran_letters[]){
+
+	char *word;
+	int flag = 0;
+	
+	printf("Enter word:  ");
+	scanf("%s", &word);
+	
+	
+		for(int i=0;  !=  ; i++){
+		printf("2\n");
+			for(int j=0; j < b - 1; j++){
+			printf("3\n");
+				if(word[i] == ran_letters[j]){
+					ran_letters[j] = ''; // za da mahna slychai v koito dymata na potrebitelq 									  izpolzva edna vykwa dva puti
+					flag = 1;
+					printf("4\n");
+			}
+				printf("1234\n");
+		}
+	}
+}
+
+
 extern void startGame(int letters, int rounds) {
     letter_generation(letters);
-    
-    /*
-    1. Във всеки рунд се генерират няколко на брой букви и се изписват на екрана.
-    2. Потребителят въвежда дума, която се състои само от предоставените букви.
-        - При въвеждане на невалидна дума (която съдържа други букви или повече от подадения брой от дадена буква) се
-        извежда съобщение за грешка и се преминава към стъпка 2.
-        - При въвеждане на валидна дума се изчисляват точките ѝ (по подразбиране всяка буква е 1 точка) и се прибавят към
-        общите точки на потребителя.
-    3. Докато не свършат рундовете се връщаме към точка 2.
-    4. При приключване на последния рунд се изписва крайния резултат на играча и се връща в основното меню.
-
-    */
+    //enter_and_check(letters);
 }
