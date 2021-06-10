@@ -4,7 +4,8 @@
 
 #include "./game_logic/game_logic.h"
 #include "./game_settings/game_settings.h"
-#include "./dictionary_to_trie/trie_generation.h"
+#include "./dictionary_handling/trie_handling.h"
+#include "./dictionary_handling/add_word_to_dict.h"
 
 
 // ============================================================================================= //
@@ -61,8 +62,9 @@ void startingMenu() {
 	    	case 3:
                 // printf("trqbva da vuvedem dyma v rechnika"); // Tyk trqbva fynkciq za dobavqne na dyma v rechnika
 
-				//append_dict();
-				trie_generate();
+				//trieGenerate();
+				//addWordToDict();
+				extractSringFromDict();
 
 	    		break;
 			
@@ -79,7 +81,7 @@ void startingMenu() {
 	
 	} while (menu < 0 || menu > 4);
 	
-	system("clear");
+	//system("clear");
 }
 
 
