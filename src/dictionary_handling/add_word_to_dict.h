@@ -1,6 +1,9 @@
 #include <stdio.h>
 
 
+// ============================================================================================= //
+
+
 extern void addWordToDict() {
 
     // open the file in append mode
@@ -12,7 +15,6 @@ extern void addWordToDict() {
 
     // append the word
     fprintf(dict, ",%s", word);
-
 
     // close the file
     fclose(dict);

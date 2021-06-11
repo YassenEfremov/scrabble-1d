@@ -5,6 +5,9 @@
 #include "../../libs/trie.h"
 
 
+// ============================================================================================= //
+
+
 extern void trieGenerate(char *word) {
     // generate trie from string
 }
@@ -22,6 +25,7 @@ extern void extractSringFromDict() {
     }
 
 
+
     // Get the number of letters in the file
     fseek(dict, 0, SEEK_END);   // set file position indicator at the end
     long dict_size = ftell(dict);   // get the value of the pos indicator = bytes in the file
@@ -33,18 +37,28 @@ extern void extractSringFromDict() {
 
     fclose(dict);
 
-    buffer[dict_size] = '\0';
+    buffer[dict_size] = '\0';   // last char is terminating zero
 
 
-    // Split the huge string in the buffer into words
+
+    // Start constructing the trie
+    struct trie_t dict_trie;
+    trie_init(&dict_trie);
+
+    // While splitting the initial string into words, start inserting into the tree
     char *token = strtok(buffer, ",");
 
     while(token != NULL) {
-        //> Add to trie
-        //printf("%s\n", token);
+        // Insert every seperate word
+        trie_insert(&dict_trie);
         token = strtok(NULL, ",");
-        
     }
+    
 
+
+    // Write the tree into a binary file
+
+
+    trie_delete(&dict_trie);
     free(buffer);
 }
