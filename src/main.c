@@ -63,9 +63,9 @@ void startingMenu() {
 	    	case 3:
                 // printf("trqbva da vuvedem dyma v rechnika"); // Tyk trqbva fynkciq za dobavqne na dyma v rechnika
 
-			//trieGenerate();
-			//addWordToDict();
-			//extractSringFromDict();
+				dictToTrie();
+				//addWordToDict();
+				//extractSringFromDict();
 
 	    		break;
 			

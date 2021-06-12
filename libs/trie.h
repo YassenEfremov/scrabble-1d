@@ -1,16 +1,14 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <stdbool.h>
-#define ARRAY_SIZE(a) sizeof(a)/sizeof(a[0])
-#define CHAR_TO_INDEX(c) ((int)c - (int)'a')
+
 
 // ============================================================================================= //
 
 
 struct node_t {
 	struct node_t *children[26];
-	bool isEndOfWord;
+	int isEndOfWord;
 };
 
 
@@ -21,25 +19,26 @@ struct trie_t {
 
 
 // ============================================================================================= //
-struct node_t *getNode(void)
-{
-    struct node_t *pNode = NULL;
-    pNode = (struct node_t *)malloc(sizeof(struct node_t));
-    if (pNode)
-    {
-        int i;
-        pNode->isEndOfWord = false;
-        for (i = 0; i < 26; i++)
-            pNode->children[i] = NULL;
-    }
-    return pNode;
-}
+
 
 extern void trie_init(struct trie_t *trie) {
+
 	trie->size = 0;
 	trie->root = NULL;
-	
 }
+
+
+struct node_t *trie_create_node() {
+
+    struct node_t *new_node = (struct node_t *)malloc(sizeof(struct node_t));;
+    
+    for(int i = 0; i < 26; i++) new_node->children[i] = NULL;
+    new_node->isEndOfWord = 0;
+        
+    return new_node;
+}
+
+/*
 bool search(struct node_t *root, const char *key)
 {
     int level;
@@ -59,27 +58,37 @@ bool search(struct node_t *root, const char *key)
 
     return (pCrawl != NULL && pCrawl->isEndOfWord);
 }
+*/
 
-extern void trie_insert(struct trie_t *trie, const char *key) {
-    int level;
-    int length = strlen(key);
-    int index;
+extern void trie_insert(struct trie_t *trie, char *word) {
 
-    struct node_t *pCrawl = trie->root;
+    if(trie->root == NULL) {
+        // Trie is empty
+        trie->root = trie_create_node();
 
-    for (level = 0; level < length; level++)
-    {
-        index = CHAR_TO_INDEX(key[level]);
-        if (!pCrawl->children[index])
-            pCrawl->children[index] = getNode();
+    }else {
 
-        pCrawl = pCrawl->children[index];
+        int word_length = strlen(word);
+        struct node_t *temp = trie->root;
+
+        for(int level = 0; level < word_length; level++) {
+            // Go down the trie and search for the letters in the word
+
+            int letter_index = (int)word[level] - (int)'a';    // this gets the letters index in the alphabet
+
+            if(temp->children[letter_index] == NULL) {
+                // The letter isn't in the tree => insert it
+                temp->children[letter_index] = trie_create_node();
+            }
+            temp = temp->children[letter_index];    // move to the next letter
+        }
+
+        temp->isEndOfWord = 1;
     }
-
-    pCrawl->isEndOfWord = true;
 }
 
 extern void trie_delete(struct trie_t *trie) {
 
 	// frees the memory allocated for the tree
+    return;
 }

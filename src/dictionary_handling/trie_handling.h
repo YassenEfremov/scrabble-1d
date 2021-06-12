@@ -3,19 +3,44 @@
 #include <string.h>
 
 #include "../../libs/trie.h"
+#include "file_contents_to_string.h"
 
 
 // ============================================================================================= //
 
 
-extern void trieGenerate(char *word) {
-    // generate trie from string
+void trieGenerate(char *buffer) {
+
+    // Start constructing the trie
+    struct trie_t dict_trie;
+    trie_init(&dict_trie);
+
+    // While splitting the initial string into words, start inserting into the tree
+    char *token = strtok(buffer, "\n");
+    
+    while(token != NULL) {
+        // Insert every seperate word
+        trie_insert(&dict_trie, token);
+        token = strtok(NULL, "\n");  // get the next word
+    }
+
+
+
+    // Write the tree into a binary file
+    FILE *trie_bin = fopen("../bin/trie.bin", "wb");
+
+    //> write to it                                                                         // TO DO
+    
+
+    fclose(trie_bin);
+    trie_delete(&dict_trie);    // free the memory for the trie
+
 }
 
 
-extern void extractSringFromDict() {
+extern void dictToTrie() {
 
-    // Open the dictionary file for reading 
+    // Open the dictionary for reading 
     FILE *dict  = fopen("./dictionary_handling/dictionary.csv", "r");
 
     if(!dict) {
@@ -24,41 +49,13 @@ extern void extractSringFromDict() {
         return;
     }
 
-
-
-    // Get the number of letters in the file
-    fseek(dict, 0, SEEK_END);   // set file position indicator at the end
-    long dict_size = ftell(dict);   // get the value of the pos indicator = bytes in the file
-    fseek(dict, 0, SEEK_SET);   // reset pos indicator
-
-    // Save them in a buffer
-    char *buffer = (char *)malloc(dict_size + 1);
-    fread(buffer, dict_size, 1, dict);
+    // Copy its contetnts into a buffer
+    char *buffer = copyFileContentsToString(&dict);
 
     fclose(dict);
 
-    buffer[dict_size] = '\0';   // last char is terminating zero
+    // Pass the buffer to generate the tree
+    trieGenerate(buffer);
 
-
-
-    // Start constructing the trie
-    struct trie_t dict_trie;
-    trie_init(&dict_trie);
-
-    // While splitting the initial string into words, start inserting into the tree
-    char *token = strtok(buffer, ",");
-
-    while(token != NULL) {
-        // Insert every seperate word
-        trie_insert(&dict_trie);
-        token = strtok(NULL, ",");
-    }
-    
-
-
-    // Write the tree into a binary file
-
-
-    trie_delete(&dict_trie);
-    free(buffer);
+    free(buffer);   // free the momory for the buffer
 }
