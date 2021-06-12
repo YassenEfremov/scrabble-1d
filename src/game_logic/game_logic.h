@@ -3,8 +3,6 @@
 #include <time.h>
 #include <string.h>
 
-
-
 extern int enter_and_check(char rand_letters[], int letters){
 
 	char word[letters];
@@ -74,7 +72,6 @@ extern void letter_generation(int letters){
 
 
 extern void startGame(int letters, int rounds){
-
 	
     letter_generation(letters);
     //enter_and_check(letters);

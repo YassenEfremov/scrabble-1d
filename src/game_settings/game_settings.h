@@ -1,6 +1,67 @@
 #include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
 
 // Here are the sittings for letters and rounds
+
+void rounds_from_file(int* rounds){ //  function to read the amount of rounds from file
+
+    FILE* fp;
+    fp = fopen("./game_settings/num_of_let_and_rounds.txt", "r");
+
+    char buffer[25];
+    char ch;
+    int i =0;
+
+        while(1){ // READ EVERYTHING FROM FILE AND SAVE IT IN BUFFER
+            ch = fgetc(fp);
+            if(feof(fp)){
+                break;
+            }
+            buffer[i] = ch;
+            i++;
+        }
+        buffer[i] = '\0';
+
+    char pr[2] = ",";
+    char *token;
+    token = strtok(buffer, pr);
+
+    char* amount_of_rounds;
+    int flag = 0;
+
+    while(token != '\0'){
+        flag++;
+        token = strtok(NULL, pr);
+        if(flag == 1){
+            amount_of_rounds = token;
+        }
+    }
+    
+    *rounds = atoi(amount_of_rounds);
+
+    fclose(fp);
+}
+
+void letters_from_file(int* letters){ // function to read the amount of letters from file
+
+    char buffer[25];
+    char ch;
+    int i = 0;
+    
+    FILE* fp;
+    fp = fopen("./game_settings/num_of_let_and_rounds.txt", "r");
+
+    while((ch = fgetc(fp)) != ','){
+        buffer[i] = ch;
+        i++;
+    }
+
+    *letters = atoi(buffer);
+    
+    fclose(fp);
+}
+
 
 extern void gameSettings(int *letters, int *rounds) {
     int choice;    

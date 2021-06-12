@@ -18,9 +18,15 @@ void startingMenu();
 
 int main() {
     
-    startingMenu();
+   int letters;
+   int rounds;
+    
+   letters_from_file(&letters);
+   rounds_from_file(&rounds);
+    
+   startingMenu();
 
-    return 0;
+   return 0;
 }
 
 
@@ -34,8 +40,9 @@ void startingMenu() {
 
 	int menu;
 	int letters = 10; // default
-    int rounds = 10; // default
-
+    	int rounds = 10; // default
+	
+	
 	do {
         printf("--------------------------------------------- \n");
 	    printf("	(1)	New Game  \n");
