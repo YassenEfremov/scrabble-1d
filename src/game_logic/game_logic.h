@@ -3,14 +3,11 @@
 #include <time.h>
 #include <string.h>
 
-extern int enter_and_check(char rand_letters[], int letters){
+extern int enter_and_check(char rand_letters[], int letters, int* flag){
 
 	char word[letters];
-	// int flag = 0;
-	
-	printf("Enter word to play or enter 9 to skip level:  ");
+	printf("\nEnter word to play or enter 9 to skip level:  ");
 	scanf("%s", word);
-	
 	
 	char quit_word[] = "9";
 	
@@ -20,19 +17,19 @@ extern int enter_and_check(char rand_letters[], int letters){
 
 	for(int i = 0; word[i] != '\0'; i++){
 
-		int flag = 0;
+		*flag = 0;
 	
 		for(int j = 0; rand_letters[j] != '\0'; j++){
 
 			if(rand_letters[j] == word[i]){
-				flag = 1;
+				*flag = 1;
 				rand_letters[j] = '-';
 				break;
 			}
 
 		}
-
-		if(flag == 0){
+		
+		if(*flag == 0){
 			return 0;
 		}
 
@@ -44,7 +41,7 @@ extern int enter_and_check(char rand_letters[], int letters){
 
 
 //  Funkciq za generirane na bykwi za edin round i printiraneto im
-extern void letter_generation(int letters){
+extern void letter_generation(int letters, int* flag){
     int random_letter;
     char array[letters + 1];
     
@@ -54,27 +51,32 @@ extern void letter_generation(int letters){
         // izpolzvam formula za generiraneto na slychaina bykwa -> (rand() % (upper - lower + 1)) + lower;
         random_letter = (rand() % (122 - 97 + 1)) + 97; 
         array[i] = random_letter;
-        printf("%c", array[i]);
+        printf("%c  | ", array[i]);
     }
 	array[letters] = '\0';
-
-
-	int flag;
-
+	
 	do{
 
-	flag = enter_and_check(array, letters);
-
-	}while(flag == 0);
+		*flag = enter_and_check(array, letters, flag);
+		
+	}while(*flag == 0);
 
 }
 
 
 
 extern void startGame(int letters, int rounds){
+	int flag = 0;
+	int points = 0;	
+	for(int i =0; i < rounds; i++){
+        	letter_generation(letters, &flag);
+        	if(flag == 1){
+        		points++;
+        	}
+	}
 	
-    letter_generation(letters);
-    //enter_and_check(letters);
-
-	return;
+	printf("Your score is:  %d", points);
+	
 }
+
+
