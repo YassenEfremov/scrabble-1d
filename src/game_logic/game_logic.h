@@ -28,8 +28,42 @@ int check_trie_bin(char *word) {
 
 
 int check_trie(char *word) {
-	// Check the trie for the word
-	return 1;
+    // TEMPORARY
+    // Check if the word is in the trie structure (not the binary file)
+
+    int level;
+    int length = strlen(word);
+    int index;
+    struct node_t *pCrawl = &dict_trie_root;
+
+    for (level = 0; level < length; level++)
+    {
+        index = (int)word[level] - (int)'a';
+
+        if (!pCrawl->children[index])
+            return 0;
+
+        pCrawl = pCrawl->children[index];
+    }
+
+    return (pCrawl != NULL && pCrawl->isEndOfWord);
+
+/*
+    struct node_t *temp = &dict_trie_root;
+    int letter_index;
+
+    for(int level = 0; level < strlen(word); level++) {
+        letter_index = (int)(word[level] - 'a');
+
+        if(temp->children[letter_index] == NULL) return 0;
+        printf("%p ", temp->children[letter_index]);
+        temp = temp->children[letter_index];
+    }
+
+    printf("(%d)", (temp != NULL && temp->isEndOfWord));
+    return (temp != NULL && temp->isEndOfWord);
+    */
+
 }
 
 
@@ -84,6 +118,9 @@ extern int enter_and_check(char rand_letters[], int letters, int* points){
 
 
 //  Funkciq za generirane na bykwi za edin round i printiraneto im
+//<----------------------------------------------------------------------------->//
+//  Da se napravi taka che da ima pone 2 glasni koito se padat zaduljitelno !!!!!!
+//<----------------------------------------------------------------------------->//
 extern void letter_generation(int letters, int* points){
     int random_letter;
     char array[letters + 1];
