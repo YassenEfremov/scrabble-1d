@@ -5,7 +5,7 @@
 #include "./game_logic/game_logic.h"
 #include "./game_settings/game_settings.h"
 
-#include "./dictionary_handling/trie_handling.h"
+#include "./dictionary_handling/dict_to_trie.h"
 #include "./dictionary_handling/add_word_to_dict.h"
 
 
@@ -69,7 +69,10 @@ void startingMenu() {
 			
 	    	case 3:
 				system("clear");
-                printf("trqbva da vuvedem dyma v rechnika"); // Tyk trqbva fynkciq za dobavqne na dyma v rechnika
+                //printf("trqbva da vuvedem dyma v rechnika"); // Tyk trqbva fynkciq za dobavqne na dyma v rechnika
+				addWordToDict();	
+				//dictToTrie();
+				exit(EXIT_SUCCESS);
 				break;
 			
 	    	case 4:
@@ -84,8 +87,6 @@ void startingMenu() {
 	    }
 	
 	} while (1);
-	
-	//system("clear");
 }
 
 

@@ -11,22 +11,22 @@ struct node_t {
 	int isEndOfWord;
 };
 
-
+/*
 struct trie_t {
 	int size;
 	struct node_t *root;
 };
-
+*/
 
 // ============================================================================================= //
 
-
+/*
 extern void trie_init(struct trie_t *trie) {
 
 	trie->size = 0;
 	trie->root = NULL;
 }
-
+*/
 
 struct node_t *trie_create_node() {
 
@@ -60,16 +60,16 @@ bool search(struct node_t *root, const char *key)
 }
 */
 
-extern void trie_insert(struct trie_t *trie, char *word) {
-
+extern void trie_insert(struct node_t *root, char *word) {
+/*
     if(trie->root == NULL) {
         // Trie is empty
         trie->root = trie_create_node();
 
-    }else {
+    }else {*/
 
         int word_length = strlen(word);
-        struct node_t *temp = trie->root;
+        struct node_t *temp = root;
 
         for(int level = 0; level < word_length; level++) {
             // Go down the trie and search for the letters in the word
@@ -84,11 +84,20 @@ extern void trie_insert(struct trie_t *trie, char *word) {
         }
 
         temp->isEndOfWord = 1;
-    }
+    //}
 }
 
-extern void trie_delete(struct trie_t *trie) {
 
-	// frees the memory allocated for the tree
-    return;
+extern void trie_delete(struct node_t *root) {
+
+    // Base case
+    if(root == NULL) return;
+
+    for(int i = 0; i < 26; i++) {
+        // Go through every child of every node
+        if(root->children[i] != NULL) {
+            trie_delete(root->children[i]);
+            free(root->children[i]);
+        }
+    }
 }

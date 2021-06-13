@@ -1,7 +1,7 @@
 #include <stdio.h>
 #include <string.h>
 
-#include "file_contents_to_string.h"
+#include "../../libs/file_contents_to_string.h"
 
 // ============================================================================================= //
 
@@ -9,7 +9,7 @@
 extern void addWordToDict() {
 
     // Open the dictionary for appending and reading
-    FILE *dict = fopen("./dictionary_handling/dictionary.csv", "a+");
+    FILE *dict = fopen("./dictionary_handling/dictionary.txt", "a+");
 
     if(!dict) {
         // Catch any exeptions
@@ -23,7 +23,7 @@ extern void addWordToDict() {
 
 
     // Take user input
-    char *word = (char *)malloc(sizeof(char));  
+    char word[46]; 
     printf("New word: ");
     scanf("%s", word);
 
@@ -36,7 +36,7 @@ extern void addWordToDict() {
 
     // Check if the word is already in the dictionary
     
-    // BUG: if the entered word is part of a bigger word, it's not valid!                               // TO FIX
+    // BUG: if the entered word is part of an existing word, it's not valid!                               // TO FIX
 
     while(strstr(buffer, word) != NULL) {
         printf("The word is already in the dictionary!\n"); 
@@ -49,11 +49,11 @@ extern void addWordToDict() {
     // append the word
     fprintf(dict, "\n%s", word);
 
+    system("clear");
     printf("Insert successful!\n");
 
 
     // close the file and free the allocated memory
     fclose(dict);
     free(buffer);
-    free(word);    
 }
