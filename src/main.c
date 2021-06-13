@@ -2,6 +2,8 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include "libs/trie.h"
+
 #include "./game_logic/game_logic.h"
 #include "./game_settings/game_settings.h"
 
@@ -42,6 +44,8 @@ void startingMenu() {
 	int menu;
 	int letters = 10; // default
     int rounds = 10; // default
+
+	//struct node_t *root;	// TEMPORARY
 	
 	system("clear");
 	
@@ -58,7 +62,9 @@ void startingMenu() {
 
 	    	case 1:
 				system("clear");
-                startGame(letters, rounds); // funkciqta za IGRATA
+				dictToTrie();
+                startGame(letters, rounds); // funkciqta za zapochvane na IGRATA
+				trie_delete(&dict_trie_root);
 				break;
 			
 	    	case 2:
@@ -69,10 +75,8 @@ void startingMenu() {
 			
 	    	case 3:
 				system("clear");
-                //printf("trqbva da vuvedem dyma v rechnika"); // Tyk trqbva fynkciq za dobavqne na dyma v rechnika
-				addWordToDict();	
-				//dictToTrie();
-				exit(EXIT_SUCCESS);
+				addWordToDict();		// dobavqne na dum v rechnika	
+				dictToTrie();			// generirane na durvo ot rechnika
 				break;
 			
 	    	case 4:

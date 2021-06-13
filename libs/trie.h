@@ -5,11 +5,16 @@
 
 // ============================================================================================= //
 
+#ifndef TRIE
+#define TRIE
 
 struct node_t {
 	struct node_t *children[26];
 	int isEndOfWord;
 };
+
+// TEMPORARY DEFINITION FOR TRIE ROOT
+struct node_t dict_trie_root;
 
 /*
 struct trie_t {
@@ -61,30 +66,23 @@ bool search(struct node_t *root, const char *key)
 */
 
 extern void trie_insert(struct node_t *root, char *word) {
-/*
-    if(trie->root == NULL) {
-        // Trie is empty
-        trie->root = trie_create_node();
 
-    }else {*/
+    int word_length = strlen(word);
+    struct node_t *temp = root;
 
-        int word_length = strlen(word);
-        struct node_t *temp = root;
+    for(int level = 0; level < word_length; level++) {
+        // Go down the trie and search for the letters in the word
 
-        for(int level = 0; level < word_length; level++) {
-            // Go down the trie and search for the letters in the word
+        int letter_index = (int)word[level] - (int)'a';    // this gets the letters index in the alphabet
 
-            int letter_index = (int)word[level] - (int)'a';    // this gets the letters index in the alphabet
-
-            if(temp->children[letter_index] == NULL) {
-                // The letter isn't in the tree => insert it
-                temp->children[letter_index] = trie_create_node();
-            }
-            temp = temp->children[letter_index];    // move to the next letter
+        if(temp->children[letter_index] == NULL) {
+            // The letter isn't in the tree => insert it
+            temp->children[letter_index] = trie_create_node();
         }
+        temp = temp->children[letter_index];    // move to the next letter
+    }
 
-        temp->isEndOfWord = 1;
-    //}
+    temp->isEndOfWord = 1;
 }
 
 
@@ -101,3 +99,5 @@ extern void trie_delete(struct node_t *root) {
         }
     }
 }
+
+#endif

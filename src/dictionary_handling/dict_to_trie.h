@@ -9,10 +9,28 @@
 // ============================================================================================= //
 
 
+void trieWriteBinary(struct node_t *root, FILE **trie_bin) {
+    // (recursive)
+
+    // Base case
+    if(root == NULL) return;
+
+    for(int i = 0; i < 26; i++) {
+        // Go through every child of every node
+        if(root->children[i] != NULL) {
+            trieWriteBinary(root->children[i], trie_bin);
+            
+            // Write the node to the file
+            fwrite(root, sizeof(struct node_t), 1, *trie_bin);
+        }
+    }
+}
+
+
 void trieGenerate(char *buffer) {
 
     // Start constructing the trie
-    struct node_t dict_trie_root;
+    //struct node_t dict_trie_root;
     // Set the default values for root
     for(int i = 0; i < 26; i++) dict_trie_root.children[i] = NULL;
     dict_trie_root.isEndOfWord = 0;
@@ -22,23 +40,20 @@ void trieGenerate(char *buffer) {
     
     while(token != NULL) {
         // Insert every seperate word
-        printf("%s\n", token);
         trie_insert(&dict_trie_root, token);
         token = strtok(NULL, "\n");  // get the next word
     }
 
 
-
     // Write the tree into a binary file
     FILE *trie_bin = fopen("../bin/trie.bin", "wb");
 
-    //> write to it
-    //  > write the individual structures in a preorder treversal
-    
+    // Treverse the trie and write it to a binary file (recursively)
+    trieWriteBinary(&dict_trie_root, &trie_bin);
+
 
     fclose(trie_bin);
-    trie_delete(&dict_trie_root);    // free the memory for the trie
-
+    //trie_delete(&dict_trie_root);    // free the memory for the trie      // TEMPORARY
 }
 
 
@@ -59,7 +74,7 @@ extern void dictToTrie() {
     fclose(dict);
 
     // Pass the buffer to generate the tree
-    trieGenerate(buffer);
+    trieGenerate(buffer);                   // TEMPORARY
 
     free(buffer);   // free the momory for the buffer
 }

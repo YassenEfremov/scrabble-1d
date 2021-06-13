@@ -78,9 +78,9 @@ extern void gameSettings(int *letters, int *rounds) {
     
         //system("clear");
 
-        printf("     (1)    Change number of letters: \n");
-        printf("     (2)    Change number of rounds: \n");
-        printf("     (3)    < Back \n");
+        printf("     (1)    Change number of letters\n");
+        printf("     (2)    Change number of rounds\n");
+        printf("     (3)    < Back\n");
         scanf("%d", &choice);
         
         if(choice == 1){
@@ -88,7 +88,7 @@ extern void gameSettings(int *letters, int *rounds) {
             int flag = 0;
             
             do{
-                printf("How many letters do you want: ");
+                printf("\nHow many letters do you want: ");
                 scanf("%d", &num_letters2);
             
                 if(num_letters2 < 3 || num_letters2 > 27){
