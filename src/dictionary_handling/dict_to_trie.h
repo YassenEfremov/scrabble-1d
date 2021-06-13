@@ -74,7 +74,7 @@ extern void dictToTrie() {
     fclose(dict);
 
     // Pass the buffer to generate the tree
-    trieGenerate(buffer);                   // TEMPORARY
+    trieGenerate(buffer);                                   // TEMPORARY
 
     free(buffer);   // free the momory for the buffer
 }

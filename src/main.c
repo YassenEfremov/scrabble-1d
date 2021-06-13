@@ -45,8 +45,6 @@ void startingMenu() {
 	int letters = 10; // default
     int rounds = 10; // default
 
-	//struct node_t *root;	// TEMPORARY
-	
 	system("clear");
 	
 	do {

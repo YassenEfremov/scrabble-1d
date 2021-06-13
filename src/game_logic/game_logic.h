@@ -10,7 +10,7 @@
 
 
 int check_trie_bin(char *word) {
-	//> Check if the entered word is in the trie_bin											// TO DO
+	//> Check if the entered word is in the trie_bin							// TO DO
 	//> return 1 if it is
 	//> return 0 if it isn't
 
