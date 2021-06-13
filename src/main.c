@@ -18,11 +18,11 @@ void startingMenu();
 
 int main() {
     
-   int letters;
-   int rounds;
+   //int letters;
+   //int rounds;
     
-   letters_from_file(&letters);
-   rounds_from_file(&rounds);
+   //letters_from_file(&letters);
+   //rounds_from_file(&rounds);
     
    startingMenu();
 
@@ -36,13 +36,10 @@ int main() {
 
 void startingMenu() {
 
-    system("clear");
-
 	int menu;
 	int letters = 10; // default
-    	int rounds = 10; // default
+    int rounds = 10; // default
 	
-	MAIN_MENU:
 	system("clear");
 	
 	do {
@@ -57,31 +54,33 @@ void startingMenu() {
 	    switch(menu) {
 
 	    	case 1:
-                //printf("zapochva igrata");
+				system("clear");
                 startGame(letters, rounds); // funkciqta za IGRATA
-	    	goto MAIN_MENU;
+				break;
 			
 	    	case 2:
-                //printf("otivame v settings");
+				system("clear");
                 gameSettings(&letters, &rounds); // fynkicq za settings
-                goto MAIN_MENU;
+				system("clear");
+				break;
 			
 	    	case 3:
+				system("clear");
                 printf("trqbva da vuvedem dyma v rechnika"); // Tyk trqbva fynkciq za dobavqne na dyma v rechnika
-                goto MAIN_MENU;
+				break;
 			
 	    	case 4:
                 system("clear"); 
                 exit(EXIT_SUCCESS); // izlizame ot igrata
-	    		//break;
+	    		break;
 			
 	    	default:
-                system("clear");
+				system("clear");
 	    		printf("Nevalidno, probvai pak\n");
 	    		break;
 	    }
 	
-	} while (menu < 1 || menu > 4);
+	} while (1);
 	
 	system("clear");
 }

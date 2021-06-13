@@ -26,14 +26,12 @@ extern int enter_and_check(char rand_letters[], int letters, int* points){
 				rand_letters[j] = '-';
 				break;
 			}
-
 		}
 		
 		if(flag == 0){
 			count = 0;
 			return 0;
 		}
-
 	}
 	
 	*points += count;
@@ -53,7 +51,7 @@ extern void letter_generation(int letters, int* points){
         // izpolzvam formula za generiraneto na slychaina bykwa -> (rand() % (upper - lower + 1)) + lower;
         random_letter = (rand() % (122 - 97 + 1)) + 97; 
         array[i] = random_letter;
-        printf("%c  | ", array[i]);
+        printf("%c  |  ", array[i]);
     }
 	array[letters] = '\0';
 	
@@ -63,7 +61,6 @@ extern void letter_generation(int letters, int* points){
 		flag = enter_and_check(array, letters, points);
 		
 	}while(flag == 0);
-
 }
 
 
@@ -73,9 +70,7 @@ extern void startGame(int letters, int rounds){
 	for(int i =0; i < rounds; i++){
         	letter_generation(letters, &points);
 	}
-	
+
+	system("clear");	
 	printf("Your score is:  %d", points);
-	
 }
-
-

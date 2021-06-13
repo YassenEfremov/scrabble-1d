@@ -2,8 +2,11 @@
 #include <stdlib.h>
 #include <string.h>
 
-// Here are the sittings for letters and rounds
 
+// THESE WILL BE REPLACED WITH JSON! (possibly)
+// v v v v v v v v v v v v v v v v v v v v v v
+
+/*
 void rounds_from_file(int* rounds){ //  function to read the amount of rounds from file
 
     FILE* fp;
@@ -13,24 +16,24 @@ void rounds_from_file(int* rounds){ //  function to read the amount of rounds fr
     char ch;
     int i =0;
 
-        while(1){ // READ EVERYTHING FROM FILE AND SAVE IT IN BUFFER
-            ch = fgetc(fp);
-            if(feof(fp)){
-                break;
-            }
-            buffer[i] = ch;
-            i++;
+    while(1){ // READ EVERYTHING FROM FILE AND SAVE IT IN BUFFER
+        ch = fgetc(fp);
+        if(feof(fp)){
+            break;
         }
-        buffer[i] = '\0';
+        buffer[i] = ch;
+        i++;
+    }
+    buffer[i] = '\0';
 
-    char pr[2] = ",";
+    char *pr = ",";
     char *token;
     token = strtok(buffer, pr);
 
     char* amount_of_rounds;
     int flag = 0;
 
-    while(token != '\0'){
+    while(token != NULL){
         flag++;
         token = strtok(NULL, pr);
         if(flag == 1){
@@ -42,7 +45,8 @@ void rounds_from_file(int* rounds){ //  function to read the amount of rounds fr
 
     fclose(fp);
 }
-
+*/
+/*
 void letters_from_file(int* letters){ // function to read the amount of letters from file
 
     char buffer[25];
@@ -61,59 +65,68 @@ void letters_from_file(int* letters){ // function to read the amount of letters 
     
     fclose(fp);
 }
-
+*/
 
 extern void gameSettings(int *letters, int *rounds) {
     int choice;    
     int num_letters2;
     int num_rounds2;
     
-    system("clear");
+    //system("clear");
     
     do{
     
-    printf("     (1)   Change number of letters: \n");
-    printf("     (2)      Change number of rounds: \n");
-    scanf("%d", &choice);
-    
-    if(choice == 1){
-    
-        int flag = 0;
+        //system("clear");
+
+        printf("     (1)    Change number of letters: \n");
+        printf("     (2)    Change number of rounds: \n");
+        printf("     (3)    < Back \n");
+        scanf("%d", &choice);
         
-        do{
-            printf("How many letters do you want: \n");
-            scanf("%d", &num_letters2);
+        if(choice == 1){
         
-            if(num_letters2 < 3 || num_letters2 > 27){
-                printf("\nInvalid, try again !\n");
-                continue;
-            }
+            int flag = 0;
             
-            flag = 1;
-            *letters = num_letters2;
+            do{
+                printf("How many letters do you want: ");
+                scanf("%d", &num_letters2);
             
-        }while(flag != 1);
-        
-    }else if(choice == 2){
-    
-        int flag = 0;
-        
-        do{
-            printf("How many rounds do you want:  \n");
-            scanf("%d", &num_rounds2);    
+                if(num_letters2 < 3 || num_letters2 > 27){
+                    printf("\nInvalid, try again !\n");
+                    continue;
+                }
                 
-            if(num_rounds2 < 1 || num_rounds2 > 100){
-                printf("\nInvalid, try again ! \n");
-                continue;    
-            }
-            
-            flag = 1;
-            *rounds = num_rounds2;
+                flag = 1;
+                *letters = num_letters2;
                 
-        }while(flag != 1);
-    
-    }
+            }while(flag != 1);
+
+        }else if(choice == 2){
+        
+            int flag = 0;
             
-    }while (choice < 0 || choice > 3);
+            do{
+                printf("How many rounds do you want: ");
+                scanf("%d", &num_rounds2);    
+                    
+                if(num_rounds2 < 1 || num_rounds2 > 100){
+                    printf("\nInvalid, try again ! \n");
+                    continue;    
+                }
+                
+                flag = 1;
+                *rounds = num_rounds2;
+                    
+            }while(flag != 1);
+
+        }else if(choice == 3) {
+            break;
+
+        }else {
+            system("clear");
+            printf("Invalid, try again ! \n\n");
+        }
+            
+    }while (choice < 1 || choice > 3);
 	
 }
