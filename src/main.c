@@ -18,9 +18,15 @@ void startingMenu();
 
 int main() {
     
-    startingMenu();
+   int letters;
+   int rounds;
+    
+   letters_from_file(&letters);
+   rounds_from_file(&rounds);
+    
+   startingMenu();
 
-    return 0;
+   return 0;
 }
 
 
@@ -34,10 +40,13 @@ void startingMenu() {
 
 	int menu;
 	int letters = 10; // default
-    int rounds = 10; // default
-
+    	int rounds = 10; // default
+	
+	MAIN_MENU:
+	system("clear");
+	
 	do {
-        printf("--------------------------------------------- \n");
+        printf("\n--------------------------------------------- \n");
 	    printf("	(1)	New Game  \n");
 	    printf("	(2)	Settings  \n");
 	    printf("	(3)	Enter word in dictionary  \n");
@@ -50,16 +59,16 @@ void startingMenu() {
 	    	case 1:
                 //printf("zapochva igrata");
                 startGame(letters, rounds); // funkciqta za IGRATA
-	    		break;
+	    	goto MAIN_MENU;
 			
 	    	case 2:
                 //printf("otivame v settings");
                 gameSettings(&letters, &rounds); // fynkicq za settings
-	    		break;
+                goto MAIN_MENU;
 			
 	    	case 3:
                 printf("trqbva da vuvedem dyma v rechnika"); // Tyk trqbva fynkciq za dobavqne na dyma v rechnika
-	    		break;
+                goto MAIN_MENU;
 			
 	    	case 4:
                 system("clear"); 
@@ -72,7 +81,7 @@ void startingMenu() {
 	    		break;
 	    }
 	
-	} while (menu < 0 || menu > 4);
+	} while (menu < 1 || menu > 4);
 	
 	system("clear");
 }

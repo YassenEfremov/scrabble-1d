@@ -1,21 +1,81 @@
 #include <stdio.h>
+#include <stdlib.h>
+#include <time.h>
+#include <string.h>
 
-extern void startGame(int letters, int rounds) {
+extern int enter_and_check(char rand_letters[], int letters, int* points){
 
-    // Here goes the game logic
+	char word[letters];
+	printf("\nEnter word to play or enter 9 to skip level:  ");
+	scanf("%s", word);
+	char quit_word[] = "9";
+	
+	if(strcmp(word, quit_word) == 0){
+		return -1;
+	}
 
-    printf("The game begins!\n");
+	int count = 0;
+	for(int i = 0; word[i] != '\0'; i++){
 
-    /*
+		int flag = 0;
+	
+		for(int j = 0; rand_letters[j] != '\0'; j++){
+			if(rand_letters[j] == word[i]){
+				count++;
+				flag = 1;
+				rand_letters[j] = '-';
+				break;
+			}
 
-    1. Във всеки рунд се генерират няколко на брой букви и се изписват на екрана.
-    2. Потребителят въвежда дума, която се състои само от предоставените букви.
-        - При въвеждане на невалидна дума (която съдържа други букви или повече от подадения брой от дадена буква) се
-        извежда съобщение за грешка и се преминава към стъпка 2.
-        - При въвеждане на валидна дума се изчисляват точките ѝ (по подразбиране всяка буква е 1 точка) и се прибавят към
-        общите точки на потребителя.
-    3. Докато не свършат рундовете се връщаме към точка 2.
-    4. При приключване на последния рунд се изписва крайния резултат на играча и се връща в основното меню.
+		}
+		
+		if(flag == 0){
+			count = 0;
+			return 0;
+		}
 
-    */
+	}
+	
+	*points += count;
+	return 1;
 }
+
+
+
+//  Funkciq za generirane na bykwi za edin round i printiraneto im
+extern void letter_generation(int letters, int* points){
+    int random_letter;
+    char array[letters + 1];
+    
+    srand(time(0)); // generira mi random chislo, ot koeto zavisqt random chislata
+    
+    for(int i=0; i < letters; i++){
+        // izpolzvam formula za generiraneto na slychaina bykwa -> (rand() % (upper - lower + 1)) + lower;
+        random_letter = (rand() % (122 - 97 + 1)) + 97; 
+        array[i] = random_letter;
+        printf("%c  | ", array[i]);
+    }
+	array[letters] = '\0';
+	
+	int flag;
+	do{
+
+		flag = enter_and_check(array, letters, points);
+		
+	}while(flag == 0);
+
+}
+
+
+
+extern void startGame(int letters, int rounds){
+	int points = 0;	
+	for(int i =0; i < rounds; i++){
+        	letter_generation(letters, &points);
+	}
+	
+	printf("Your score is:  %d", points);
+	
+}
+
+
