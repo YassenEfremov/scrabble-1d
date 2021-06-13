@@ -21,9 +21,15 @@ void startingMenu();
 
 int main() {
     
-    startingMenu();
+   //int letters;
+   //int rounds;
+    
+   //letters_from_file(&letters);
+   //rounds_from_file(&rounds);
+    
+   startingMenu();
 
-    return 0;
+   return 0;
 }
 
 
@@ -33,14 +39,14 @@ int main() {
 
 void startingMenu() {
 
-    system("clear");
-
 	int menu;
 	int letters = 10; // default
     int rounds = 10; // default
-
+	
+	system("clear");
+	
 	do {
-        printf("--------------------------------------------- \n");
+        printf("\n--------------------------------------------- \n");
 	    printf("	(1)	New Game  \n");
 	    printf("	(2)	Settings  \n");
 	    printf("	(3)	Enter word in dictionary  \n");
@@ -51,36 +57,33 @@ void startingMenu() {
 	    switch(menu) {
 
 	    	case 1:
-                //printf("zapochva igrata");
+				system("clear");
                 startGame(letters, rounds); // funkciqta za IGRATA
-	    		break;
+				break;
 			
 	    	case 2:
-                //printf("otivame v settings");
+				system("clear");
                 gameSettings(&letters, &rounds); // fynkicq za settings
-	    		break;
+				system("clear");
+				break;
 			
 	    	case 3:
-                // printf("trqbva da vuvedem dyma v rechnika"); // Tyk trqbva fynkciq za dobavqne na dyma v rechnika
-
-				dictToTrie();
-				//addWordToDict();
-				//extractSringFromDict();
-
-	    		break;
+				system("clear");
+                printf("trqbva da vuvedem dyma v rechnika"); // Tyk trqbva fynkciq za dobavqne na dyma v rechnika
+				break;
 			
 	    	case 4:
                 system("clear"); 
                 exit(EXIT_SUCCESS); // izlizame ot igrata
-	    		//break;
+	    		break;
 			
 	    	default:
-                system("clear");
+				system("clear");
 	    		printf("Nevalidno, probvai pak\n");
 	    		break;
 	    }
 	
-	} while (menu < 0 || menu > 4);
+	} while (1);
 	
 	//system("clear");
 }
