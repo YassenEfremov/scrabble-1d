@@ -2,8 +2,13 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include "../libs/trie.h"
+
 #include "./game_logic/game_logic.h"
 #include "./game_settings/game_settings.h"
+
+#include "./dictionary_handling/dict_to_trie.h"
+#include "./dictionary_handling/add_word_to_dict.h"
 
 
 // ============================================================================================= //
@@ -39,7 +44,7 @@ void startingMenu() {
 	int menu;
 	int letters = 10; // default
     int rounds = 10; // default
-	
+
 	system("clear");
 	
 	do {
@@ -55,7 +60,9 @@ void startingMenu() {
 
 	    	case 1:
 				system("clear");
-                startGame(letters, rounds); // funkciqta za IGRATA
+				dictToTrie();
+                startGame(letters, rounds); // funkciqta za zapochvane na IGRATA
+				trie_delete(&dict_trie_root);
 				break;
 			
 	    	case 2:
@@ -66,7 +73,8 @@ void startingMenu() {
 			
 	    	case 3:
 				system("clear");
-                printf("trqbva da vuvedem dyma v rechnika"); // Tyk trqbva fynkciq za dobavqne na dyma v rechnika
+				addWordToDict();		// dobavqne na dum v rechnika	
+				dictToTrie();			// generirane na durvo ot rechnika
 				break;
 			
 	    	case 4:
@@ -81,8 +89,6 @@ void startingMenu() {
 	    }
 	
 	} while (1);
-	
-	system("clear");
 }
 
 
