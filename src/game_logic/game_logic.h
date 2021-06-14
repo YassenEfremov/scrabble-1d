@@ -44,10 +44,15 @@ extern int enter_and_check(char rand_letters[], int letters, int* points){
 extern void letter_generation(int letters, int* points){
     int random_letter;
     char array[letters + 1];
-    
+    char vowels[] = {'a','e','i','o','u','y'};
+	
     srand(time(0)); // generira mi random chislo, ot koeto zavisqt random chislata
     
-    for(int i=0; i < letters; i++){
+    random_letter = vowels[rand() % 6];
+    printf("\n");
+    printf("  %c    ", random_letter);
+	
+    for(int i=0; i < letters - 1; i++){
         // izpolzvam formula za generiraneto na slychaina bykwa -> (rand() % (upper - lower + 1)) + lower;
         random_letter = (rand() % (122 - 97 + 1)) + 97; 
         array[i] = random_letter;
