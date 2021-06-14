@@ -40,3 +40,4 @@ fog
 bad
 red
 jet
+blue

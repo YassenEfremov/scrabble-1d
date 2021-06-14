@@ -67,66 +67,109 @@ void letters_from_file(int* letters){ // function to read the amount of letters 
 }
 */
 
-extern void gameSettings(int *letters, int *rounds) {
-    int choice;    
-    int num_letters2;
-    int num_rounds2;
+//------------------------------------------------------------------//
+
+extern void write_settings(int line)
+{
     
-    //system("clear");
+    int BUFFER_SIZE = 10;
+    FILE * fPtr;
+    FILE * fTemp;
+
+    char buffer[BUFFER_SIZE];
+    char newline[BUFFER_SIZE];
+    int count;
+
+    // Remove extra new line character from stdin
+    fflush(stdin);
+
+    //max letters must be 26
+    //max rounds must be 99
+    if(line == 1){
+        printf("change the number of letters to:");
+    }
+    else{
+        printf("change the number of rounds to:");
+    }
+
+    getchar();
+    fgets(newline, BUFFER_SIZE, stdin);
+
+    /////////To Add another string variable
+    ///////// Amount of letter: newline
+
+
+    //open our needed fines
+    fPtr  = fopen("./game_settings/num_of_let_and_rounds.txt", "r");
+    fTemp = fopen("./game_settings/replace.tmp", "w"); 
+
+    //check if giles are unavle to open
+    if (fPtr == NULL || fTemp == NULL)
+    {
+        printf("\nUnable to open file.\n");
+        printf("Please check whether file exists and you have read/write privilege.\n");
+        // exit(EXIT_SUCCESS);
+        return;
+    }
+
+
+    /*
+     * Read line from source file and write to destination 
+     * file after replacing given line.
+     */
+    count = 0;
+    while ((fgets(buffer, BUFFER_SIZE, fPtr)) != NULL)
+    {
+        count++;
+
+
+        if (count == line)
+            fputs(newline, fTemp);
+        else
+            fputs(buffer, fTemp);
+    }
+
+
+    fclose(fPtr);
+    fclose(fTemp);
+
+
+    //Delete original source file
+    remove("./game_settings/num_of_let_and_rounds.txt");
+
+    // Rename temporary file as original file 
+    rename("./game_settings/replace.tmp", "./game_settings/num_of_let_and_rounds.txt");
+
+    printf("\nSuccessfully updated");
+
+    return;
+}
+
+//-----------------------------------------------------------------//
+
+extern void choose_option(){
     
+    int option;
     do{
-    
-        //system("clear");
 
         printf("     (1)    Change number of letters\n");
         printf("     (2)    Change number of rounds\n");
         printf("     (3)    < Back\n");
-        scanf("%d", &choice);
-        
-        if(choice == 1){
-        
-            int flag = 0;
-            
-            do{
-                printf("\nHow many letters do you want: ");
-                scanf("%d", &num_letters2);
-            
-                if(num_letters2 < 3 || num_letters2 > 27){
-                    printf("\nInvalid, try again !\n");
-                    continue;
-                }
-                
-                flag = 1;
-                *letters = num_letters2;
-                
-            }while(flag != 1);
+        scanf("%d", &option);
 
-        }else if(choice == 2){
-        
-            int flag = 0;
-            
-            do{
-                printf("How many rounds do you want: ");
-                scanf("%d", &num_rounds2);    
-                    
-                if(num_rounds2 < 1 || num_rounds2 > 100){
-                    printf("\nInvalid, try again ! \n");
-                    continue;    
-                }
-                
-                flag = 1;
-                *rounds = num_rounds2;
-                    
-            }while(flag != 1);
-
-        }else if(choice == 3) {
-            break;
-
-        }else {
+        if(option < 1 || option > 3){
             system("clear");
             printf("Invalid, try again ! \n\n");
         }
-            
-    }while (choice < 1 || choice > 3);
-	
+    }while(option < 1 || option > 3);
+    
+    if (option == 3){
+
+        return;
+    }
+
+    write_settings(option);
+    
+    return;
 }
+//--------------------------------------------------//

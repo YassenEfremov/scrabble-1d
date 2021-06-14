@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <time.h>
+#include <ctype.h>
 
 #include "../../libs/trie.h"
 
@@ -123,9 +124,7 @@ extern int enter_and_check(char rand_letters[], int letters, int* points){
 
 
 //  Funkciq za generirane na bykwi za edin round i printiraneto im
-//<----------------------------------------------------------------------------->//
-//  Da se napravi taka che da ima pone 2 glasni koito se padat zaduljitelno !!!!!!
-//<----------------------------------------------------------------------------->//
+
 extern void letter_generation(int letters, int* points){
     int random_letter;
     char array[letters + 1];
@@ -135,13 +134,13 @@ extern void letter_generation(int letters, int* points){
     
     random_letter = vowels[rand() % 6];
     array[0] = random_letter;
-	printf("\n%c  ", array[0]);
+	printf("\n %c ", array[0]);
 	
     for(int i=0; i < letters - 1; i++){
         // izpolzvam formula za generiraneto na slychaina bykwa -> (rand() % (upper - lower + 1)) + lower;
         random_letter = (rand() % (122 - 97 + 1)) + 97; 
         array[i+1] = random_letter;
-        printf("%c  |  ", array[i+1]);
+        printf("| %c ", array[i+1]);
     }
 	array[letters + 1] = '\0';
 	

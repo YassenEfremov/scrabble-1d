@@ -41,22 +41,32 @@ int main() {
 
 void startingMenu() {
 
-	int menu;
+	char menu[1];
 	int letters = 10; // default
     int rounds = 10; // default
+	int value;
 
 	system("clear");
 	
-	do {
-        printf("\n--------------------------------------------- \n");
-	    printf("	(1)	New Game  \n");
-	    printf("	(2)	Settings  \n");
-	    printf("	(3)	Enter word in dictionary  \n");
-	    printf("	(4)	Exit  \n");
-	    printf("--------------------------------------------- \n");
-	    scanf("%d", &menu);
-	
-	    switch(menu) {
+	do{
+		
+		do{
+			//to add a check if string is longer than 1
+			printf("\n--------------------------------------------- \n");
+			printf("	(1)	New Game  \n");
+			printf("	(2)	Settings  \n");
+			printf("	(3)	Enter word in dictionary  \n");
+			printf("	(4)	Exit  \n");
+			printf("--------------------------------------------- \n");
+			scanf("%s", menu);
+
+			//turn char value into int
+			value = (menu[0] - '0');
+		//to add a print for invalid input
+
+		}while(value < 1 || value > 4);
+
+	    switch(value){
 
 	    	case 1:
 				system("clear");
@@ -67,7 +77,8 @@ void startingMenu() {
 			
 	    	case 2:
 				system("clear");
-                gameSettings(&letters, &rounds); // fynkicq za settings
+                // gameSettings(&letters, &rounds); // fynkicq za settings
+				choose_option();
 				system("clear");
 				break;
 			
@@ -84,11 +95,11 @@ void startingMenu() {
 			
 	    	default:
 				system("clear");
-	    		printf("Nevalidno, probvai pak\n");
+	    		printf("An Error has appiered!\n");
 	    		break;
 	    }
 	
-	} while (1);
+	}while(1);
 }
 
 
