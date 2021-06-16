@@ -15,7 +15,7 @@
 /* Structures, Global variables, Function declarations */
 
 
-void startingMenu();
+void startingMenu();	// Starts a game of scrabble
 
 
 // ============================================================================================= //
@@ -48,21 +48,32 @@ void startingMenu() {
 
 	system("clear");
 	
-	do{
+	do {
 		
-		do{
+		do {
 			//to add a check if string is longer than 1
-			printf("\n--------------------------------------------- \n");
-			printf("	(1)	New Game  \n");
-			printf("	(2)	Settings  \n");
-			printf("	(3)	Enter word in dictionary  \n");
-			printf("	(4)	Exit  \n");
-			printf("--------------------------------------------- \n");
+			printf(
+				"\n"
+				"\n"
+				"			SCRABBLE\n" 
+				"		  --------------------\n"
+				"\n"
+				"		(1)	 New Game\n"
+    			"		(2)	 Settings\n" 
+    			"		(3)	 Add word\n"
+    			"		(4)	 Exit	\n"
+				"\n"
+				"\n"
+				"______________________________________________________\n"
+			);
+			printf("> ");
 			scanf("%s", menu);
 
 			//turn char value into int
 			value = (menu[0] - '0');
-		//to add a print for invalid input
+
+			system("clear");
+			if(value < 1 || value > 4) printf("Invalid, try again.");
 
 		}while(value < 1 || value > 4);
 
@@ -70,30 +81,30 @@ void startingMenu() {
 
 	    	case 1:
 				system("clear");
-				dictToTrie();
-                startGame(letters, rounds); // funkciqta za zapochvane na IGRATA
-				trie_delete(&dict_trie_root);
+				dictToTrie();	// TEMPORARY
+                startGame(letters, rounds); 	// start a game
+				trie_delete(&dict_trie_root);	// TEMPORARY
 				break;
 			
 	    	case 2:
 				system("clear");
-                // gameSettings(&letters, &rounds); // fynkicq za settings
-				choose_option();
+				openSettings();		// open game settings
 				system("clear");
 				break;
 			
 	    	case 3:
 				system("clear");
-				addWordToDict();		// dobavqne na dum v rechnika	
-				dictToTrie();			// generirane na durvo ot rechnika
+				addWordToDict();	// add word to the dictionary
+				dictToTrie();		// generate trie from dictionary
 				break;
 			
 	    	case 4:
                 system("clear"); 
-                exit(EXIT_SUCCESS); // izlizame ot igrata
+                exit(EXIT_SUCCESS);	// exit the game
 	    		break;
 			
 	    	default:
+				// invalid option
 				system("clear");
 	    		printf("An Error has appiered!\n");
 	    		break;
