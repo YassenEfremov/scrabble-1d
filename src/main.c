@@ -1,6 +1,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <ncurses.h>
+#include <menu.h>
 
 #include "../libs/trie.h"
 
@@ -15,7 +17,7 @@
 /* Structures, Global variables, Function declarations */
 
 
-void startingMenu();	// Starts a game of scrabble
+void startingMenu();	// Starts the entire application
 
 
 // ============================================================================================= //
@@ -41,11 +43,73 @@ int main() {
 
 void startingMenu() {
 
-	char menu[1];
+	//char menu;
 	int letters = 10; // default
     int rounds = 10; // default
-	int value;
+	//int value;
 
+	int rows, cols;
+	int num_of_options = 4;
+
+	ITEM **my_options;
+	MENU *main_menu;
+	ITEM *curr_item;
+	int c;
+
+	char *options[] = {
+		"New Game",
+		"Settings",
+		"Add word",
+		"Exit"
+	};
+
+	initscr();
+	raw();
+	noecho();
+	keypad(stdscr, TRUE);
+
+
+	getmaxyx(stdscr, rows, cols);
+	attron(A_BOLD);
+	mvaddstr(rows/3, cols/2 - 4, "SCRABBLE");
+	attroff(A_BOLD);
+
+
+	// COPIED
+	// initialize options
+	my_options = (ITEM **)calloc(num_of_options + 1, sizeof(ITEM *));
+	for(int i = 0; i < num_of_options; i++) {
+		my_options[i] = new_item(options[i], "");
+		my_options[num_of_options] = (ITEM *)NULL;
+	}
+
+	// initialize menu
+	main_menu = new_menu((ITEM **)my_options);
+	mvprintw(rows - 2, 0, "F1 to exit");
+	set_menu_sub(main_menu, derwin(stdscr, 0, 0, rows/2, cols/2 - 4));
+	post_menu(main_menu);
+
+	refresh();
+
+	// menu navigation
+	while ((c = getch()) != KEY_F(1)) {
+		switch(c) {
+			case KEY_DOWN:
+				menu_driver(main_menu, REQ_DOWN_ITEM);
+				break;
+			case KEY_UP:
+				menu_driver(main_menu, REQ_UP_ITEM);
+				break;
+		}
+	}
+
+	free_item(my_options[0]);
+	free_item(my_options[1]);
+	free_menu(main_menu);
+
+	endwin();
+
+/*
 	system("clear");
 	
 	do {
@@ -111,7 +175,7 @@ void startingMenu() {
 	    }
 	
 	}while(1);
+	*/
 }
-
 
 // ============================================================================================= //
