@@ -4,25 +4,24 @@
 #include <time.h>
 #include <ctype.h>
 
+//#include ""	// include the json parser
+
 #include "../../libs/trie.h"
 
 
 // ============================================================================================= //
 
 
-int check_trie_bin(char *word) {
-	//> Check if the entered word is in the trie_bin							// TO DO
+int check_trie_json(char *string) {
+	//> Check if the entered word is in the trie.json							// TO DO
 	//> return 1 if it is
 	//> return 0 if it isn't
 
-	/*
-	FILE *trie_bin = fopen("../bin/trie.bin", "wb");
+	FILE *trie_bin = fopen("../json/trie.json", "r");
 
-	struct node_t temp;
 	//fread();
 
 	fclose(trie_bin);
-	*/
 
 	return 1;
 }
@@ -30,7 +29,7 @@ int check_trie_bin(char *word) {
 
 int check_trie(char *word) {
     // TEMPORARY
-    // Check if the word is in the trie structure (not the binary file)
+    // Check if the word is in the trie structure (not the json file)
 
     int level;
     int length = strlen(word);
@@ -122,22 +121,20 @@ extern int enter_and_check(char rand_letters[], int letters, int* points){
 }
 
 
-
-//  Funkciq za generirane na bykwi za edin round i printiraneto im
-
+//  Function that generates random letters for one round and prints them
 extern void letter_generation(int letters, int* points){
     int random_letter;
     char array[letters + 1];
     char vowels[] = {'a','e','i','o','u','y'};
 	
-    srand(time(0)); // generira mi random chislo, ot koeto zavisqt random chislata
+    srand(time(0));	// set the seed for the random number generation
     
     random_letter = vowels[rand() % 6];
     array[0] = random_letter;
 	printf("\n %c ", array[0]);
 	
     for(int i=0; i < letters - 1; i++){
-        // izpolzvam formula za generiraneto na slychaina bykwa -> (rand() % (upper - lower + 1)) + lower;
+        // formula for generating a random letter -> (rand() % (upper - lower + 1)) + lower;
         random_letter = (rand() % (122 - 97 + 1)) + 97; 
         array[i+1] = random_letter;
         printf("| %c ", array[i+1]);
