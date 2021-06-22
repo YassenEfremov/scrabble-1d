@@ -9,26 +9,35 @@
 
 
 // ============================================================================================= //
+//*
 
-/*
-void trieWriteBinary(struct node_t *root, FILE **trie_bin) {
-    // (recursive)
+void write_call(struct node_t *root, FILE **trie_json, char *buffer)
+{
 
-    // Base case
-    if(root == NULL) return;
-
-    for(int i = 0; i < 26; i++) {
-        // Go through every child of every node
-        if(root->children[i] != NULL) {
-            trieWriteBinary(root->children[i], trie_bin);
+    // jwObj_string("a", "oooo");
+    for(int i = 0; i < 26; i++){
             
-            // Write the node to the file
-            fwrite(root, sizeof(struct node_t), 1, *trie_bin);
-        }
-    }
-}
-*/
+        char letter[2];
+        letter[0] = ('a' + i);
+        
+        if(root->children[i] != NULL){
+            
+            jwObj_object(letter);
+            write_call(root->children[i], trie_json, buffer);
+            if(root->children[i]->isEndOfWord == 1){
+                jwObj_int("isEndOfWord", 1);
+            }
+            else{
+                jwObj_int("isEndOfWord", 0);
+            }
+            jwEnd();
 
+        }
+    
+    }
+    return;
+
+}
 
 int trieWriteJson(struct node_t *root, FILE **trie_json) {
     //> treverse the trie
@@ -38,17 +47,14 @@ int trieWriteJson(struct node_t *root, FILE **trie_json) {
 
     // EXAMPLE CODE
 
-    char buffer[100];   // the size of the array causes problems when writing to file
+    char buffer[100000];   // the size of the array causes problems when writing to file
     int err;
 
     jwOpen(buffer, sizeof(buffer), JW_OBJECT, JW_PRETTY);
-    jwObj_string("key", "value");
-    jwObj_int("int", 1);
-    jwObj_object("anArray");
-        jwObj_int("1", 0);
-        jwObj_int("2", 1);
-    jwEnd();
 
+    write_call(root, trie_json, buffer);
+
+    
     err = jwClose();
 
     fwrite(buffer, sizeof(buffer), 1, *trie_json);

@@ -15,8 +15,15 @@ OBJ = $(patsubst %,obj/%,$(_OBJ))	# Add the obj directory path to each .o file
 # Rules
 
 # To build the .o files you need the .c version of them and all of the headers
-obj/%.o: ../libs/%.c $(DEPS)
+
+# Command for main.c
+obj/%.o: %.c $(DEPS)
 	$(CC) -c -o $@ $< $(CFLAGS)
+
+# # Command for jWrite.c
+# obj/jWrite.o: ../libs/jWrite.c
+# 	$(CC) -c -o $@ $< $(CFLAGS)
+
 
 # To build the main executable you need all of the object files
 main: $(OBJ)

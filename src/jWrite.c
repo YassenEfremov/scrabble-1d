@@ -13,7 +13,7 @@
 #include <stdio.h>
 #include <string.h>	// memset()
 
-#include "jWrite.h"
+#include "../libs/jWrite.h"
 
 //#include <stdint.h>			// definintion of uint32_t, int32_t
 typedef unsigned int uint32_t;
