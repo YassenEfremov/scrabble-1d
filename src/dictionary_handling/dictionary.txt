@@ -41,3 +41,4 @@ bad
 red
 jet
 blue
+goal

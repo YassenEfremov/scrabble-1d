@@ -88,7 +88,7 @@ void startingMenu() {
 			
 	    	case 2:
 				system("clear");
-				openSettings();		// open game settings
+				gameSettings(&letters, &rounds);		// open game settings
 				system("clear");
 				break;
 			
