@@ -73,6 +73,11 @@ void letters_from_file(int* letters){ // function to read the amount of letters 
 extern void write_settings(int line) {
 
     // This function copies the settings into a new file, changing only a specific line, and then deletes the old file
+
+
+    // THIS NEEDS TO BE REDONE USING JSON!!                 // TO DO
+    // v v v v v v v v v v v v v v v v v v
+
     
     int BUFFER_SIZE = 4;
     FILE * file_old;
@@ -86,20 +91,21 @@ extern void write_settings(int line) {
 
     //max letters must be 26
     //max rounds must be 99
+    
+    //char c;
+    int max_value, flag = 1;
 
-    char c;
-    int max_value, flag;
-
+    
     do {
         // tell the program what you are going to enter
         if(line == 1) {
-            printf("change the number of letters to:");
+            printf("Change the number of letters to:");
             max_value = 26;
         }else {
-            printf("change the number of rounds to:");
+            printf("Change the number of rounds to:");
             max_value = 99;
         }
-
+    /*
         flag = 1;    // flag reset
 
         //getc(stdin);
@@ -115,7 +121,7 @@ extern void write_settings(int line) {
             }
             if(newline[i+1] == '\0' || newline[i+1] == '\n') break;
         }
-
+    */
     }while(!flag || atoi(newline) > max_value || atoi(newline) < 1);
 
     

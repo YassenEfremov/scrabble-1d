@@ -11,8 +11,7 @@
 // ============================================================================================= //
 //*
 
-void write_call(struct node_t *root, FILE **trie_json, char *buffer)
-{
+void write_call(struct node_t *root, FILE **trie_json, char *buffer) {
 
     // jwObj_string("a", "oooo");
     for(int i = 0; i < 26; i++){
@@ -40,26 +39,19 @@ void write_call(struct node_t *root, FILE **trie_json, char *buffer)
 }
 
 int trieWriteJson(struct node_t *root, FILE **trie_json) {
-    //> treverse the trie
-    //> convert each node into its letter counterpart
-    //> add it as an object to the json file
-
-
-    // EXAMPLE CODE
 
     char buffer[100000];   // the size of the array causes problems when writing to file
-    int err;
 
     jwOpen(buffer, sizeof(buffer), JW_OBJECT, JW_PRETTY);
 
     write_call(root, trie_json, buffer);
 
     
-    err = jwClose();
+    int err_code = jwClose();
 
     fwrite(buffer, sizeof(buffer), 1, *trie_json);
 
-    return err;
+    return err_code;
 }
 
 

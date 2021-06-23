@@ -4,7 +4,7 @@
 #include <time.h>
 #include <ctype.h>
 
-//#include ""	// include the json parser
+#include "../../libs/jRead.h"
 
 #include "../../libs/trie.h"
 
@@ -12,22 +12,22 @@
 // ============================================================================================= //
 
 
-int check_trie_json(char *string) {
-	//> Check if the entered word is in the trie.json							// TO DO
+int check_trie(char *string) {
+	//> Check if the entered word is in the trie.json
 	//> return 1 if it is
 	//> return 0 if it isn't
 
-	FILE *trie_bin = fopen("../json/trie.json", "r");
+	FILE *trie_json = fopen("../json/trie.json", "r");
 
-	//fread();
+	//cheteneto stava tuk
 
-	fclose(trie_bin);
+	fclose(trie_json);
 
 	return 1;
 }
 
 
-int check_trie(char *word) {
+int check_trie_temp(char *word) {
     // TEMPORARY
     // Check if the word is in the trie structure (not the json file)
 
@@ -81,7 +81,7 @@ extern int enter_and_check(char rand_letters[], int letters, int* points){
 
 	// If we enter 9 => end round	
 	if(strcmp(word, quit_word) == 0){
-		printf(">Skipped\n");
+		printf("> Skipped\n");
 		return -1;
 	}
 
@@ -107,7 +107,7 @@ extern int enter_and_check(char rand_letters[], int letters, int* points){
 	}
 
 	// Check if the entered word is in the dict_trie
-	if(check_trie(word) == 0) {
+	if(check_trie_temp(word) == 0) {
 		// If it isn't => round points are 0
 		count = 0;
 		printf("Try again(or skip) \n");
