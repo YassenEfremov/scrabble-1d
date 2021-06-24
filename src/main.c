@@ -23,12 +23,6 @@ void startingMenu();	// Starts a game of scrabble
 
 int main() {
     
-   //int letters;
-   //int rounds;
-    
-   //letters_from_file(&letters);
-   //rounds_from_file(&rounds);
-    
    startingMenu();
 
    return 0;
@@ -41,7 +35,7 @@ int main() {
 
 void startingMenu() {
 
-	char menu[1];
+	char menu[30];
 	int letters = 10; // default
     int rounds = 10; // default
 	int value;
@@ -49,9 +43,7 @@ void startingMenu() {
 	system("clear");
 	
 	do {
-		
-		do {
-			//to add a check if string is longer than 1
+	
 			printf(
 				"\n"
 				"\n"
@@ -70,12 +62,8 @@ void startingMenu() {
 			scanf("%s", menu);
 
 			//turn char value into int
-			value = (menu[0] - '0');
-
+			value = atoi(menu);
 			system("clear");
-			if(value < 1 || value > 4) printf("Invalid, try again.");
-
-		}while(value < 1 || value > 4);
 
 	    switch(value){
 
@@ -88,7 +76,7 @@ void startingMenu() {
 			
 	    	case 2:
 				system("clear");
-				openSettings();		// open game settings
+				gameSettings(&letters, &rounds);		// open game settings
 				system("clear");
 				break;
 			
@@ -102,12 +90,12 @@ void startingMenu() {
                 system("clear"); 
                 exit(EXIT_SUCCESS);	// exit the game
 	    		break;
-			
+	    		
 	    	default:
-				// invalid option
-				system("clear");
-	    		printf("An Error has appiered!\n");
-	    		break;
+                // invalid option
+                system("clear");
+                printf("An Error has appiered!\n");
+                break;
 	    }
 	
 	}while(1);

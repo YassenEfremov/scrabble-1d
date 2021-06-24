@@ -66,7 +66,6 @@ int check_trie_temp(char *word) {
 
 }
 
-
 extern int enter_and_check(char rand_letters[], int letters, int* points){
 
 	char word[letters];
@@ -102,6 +101,7 @@ extern int enter_and_check(char rand_letters[], int letters, int* points){
 		
 		if(flag == 0){
 			count = 0;
+			printf("Try again(or skip) \n");	
 			return 0;
 		}
 	}
@@ -110,6 +110,7 @@ extern int enter_and_check(char rand_letters[], int letters, int* points){
 	if(check_trie_temp(word) == 0) {
 		// If it isn't => round points are 0
 		count = 0;
+		printf("This word is not in the dictionary\n");
 		printf("Try again(or skip) \n");
 		return 0;
 	}
@@ -139,20 +140,20 @@ extern void letter_generation(int letters, int* points){
         array[i+1] = random_letter;
         printf("| %c ", array[i+1]);
     }
+    
 	array[letters + 1] = '\0';
 	
 	int flag;
 	do{
-
+	
 		flag = enter_and_check(array, letters, points);
 		
 	}while(flag == 0);
 }
 
-
-
 extern void startGame(int letters, int rounds){
-	int points = 0;	
+	int points = 0;
+		
 	for(int i = 0; i < rounds; i++){
         letter_generation(letters, &points);
 	}
