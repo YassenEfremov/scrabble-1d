@@ -118,15 +118,11 @@ extern void gameSettings(int *letters, int *rounds) {
                 printf("Successfully updated!");
             }while(flag != 1);
             
-        }else if(choice == 3) {
-            break;
-            
-        }else {
-            system("clear");
-            printf("Invalid, try again ! \n\n");
+        }else if(choice == 3){
+            break;   
         }
-            
-    }while (choice < 1 || choice > 3);
+        
+    }while(choice < 1 || choice > 3);
     
 }
 

@@ -136,12 +136,12 @@ extern void letter_generation(int letters, int* points){
 	printf("\n %c ", array[0]);
 	
     for(int i=0; i < letters - 1; i++){
-        // izpolzvam formula za generiraneto na slychaina bykwa -> (rand() % (upper - lower + 1)) + lower;
+        //formula za generiraneto na slychaina bykwa -> (rand() % (upper - lower + 1)) + lower;
         random_letter = (rand() % (122 - 97 + 1)) + 97; 
         array[i+1] = random_letter;
         printf("| %c ", array[i+1]);
-        
     }
+    
 	array[letters + 1] = '\0';
 	
 	int flag;
