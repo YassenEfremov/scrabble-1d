@@ -40,7 +40,7 @@ void write_call(struct node_t *root, FILE **trie_json, char *buffer) {
 
 int trieWriteJson(struct node_t *root, FILE **trie_json) {
 
-    char buffer[100000];   // the size of the array causes problems when writing to file
+    char buffer[300000];   // the size of the array causes problems when writing to file
 
     jwOpen(buffer, sizeof(buffer), JW_OBJECT, JW_PRETTY);
 
