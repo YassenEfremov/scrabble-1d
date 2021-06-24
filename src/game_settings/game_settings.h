@@ -2,6 +2,10 @@
 #include <stdlib.h>
 #include <string.h>
 #include <ctype.h>
+#include <ncurses.h>
+#include <menu.h>
+
+#include "../ui/exit_app.h"
 
 
 // THESE WILL BE REPLACED WITH JSON! (possibly)
@@ -171,8 +175,97 @@ extern void write_settings(int line) {
 // --------------------------------------------------------------------------------------------- //
 
 
-extern void openSettings(){
-    
+extern void gameSettings() {
+    refresh();
+
+    // Predefined data used by ncurses
+
+    int rows, cols;
+	getmaxyx(stdscr, rows, cols);	// get the dimentions of the main screen
+
+    char *options_list[] = {
+		"Letters:",
+		"Rounds:",
+		"Back"
+	};
+    int num_of_options = sizeof(options_list)/sizeof(options_list[0]);
+
+	ITEM *curr_item;
+	int key;
+	int curr_item_index;
+
+
+
+    // Settings menu
+
+    // Options
+	ITEM **options = (ITEM **)calloc(num_of_options + 1, sizeof(ITEM *));
+	for(int i = 0; i < num_of_options; i++) {
+		options[i] = new_item(options_list[i], "");		// Name each option
+	}
+    options[num_of_options] = NULL;
+
+    // Menu
+	WINDOW *settings_menu_win = derwin(stdscr, num_of_options, 10, rows/3 + 3, cols/2 - 6);
+    keypad(settings_menu_win, TRUE);
+	MENU *settings_menu = new_menu((ITEM **)options);
+	
+    // Menu settings
+	set_menu_sub(settings_menu, settings_menu_win);
+	set_menu_mark(settings_menu, "> ");
+	set_menu_fore(settings_menu, A_BOLD);
+	
+	post_menu(settings_menu);
+
+    wrefresh(settings_menu_win);
+
+
+
+	// Navigation
+	do {
+		key = getch();
+		werase(msg_win);
+		curr_item = current_item(settings_menu);
+
+		switch(key) {
+			case KEY_DOWN:
+				menu_driver(settings_menu, REQ_DOWN_ITEM);
+				break;
+
+			case KEY_UP:
+				menu_driver(settings_menu, REQ_UP_ITEM);
+				break;
+
+			case 10:	// Enter key
+				curr_item_index = item_index(curr_item);
+
+				switch(curr_item_index) {
+					case 0:
+						//mvwaddstr(msg_win, 0, msg_len/2 - strlen(soon_msg)/2, soon_msg);
+                        // change number of letters
+						break;
+
+					case 1:
+						//mvprintw(rows/2 + 6, cols/2 - 8, "Coming soon^(tm)!");
+						// change number of rounds
+						break;
+
+					case 2:
+                        exitMenu(&settings_menu, &options, num_of_options);
+                        delwin(settings_menu_win);
+                        return;
+				}
+				break;
+		}
+		wrefresh(msg_win);
+
+	}while(1);
+
+
+
+
+
+   /* 
     int option;
 
     do {
@@ -195,6 +288,5 @@ extern void openSettings(){
     }
 
     write_settings(option);
-    
-    return;
+    */
 }
