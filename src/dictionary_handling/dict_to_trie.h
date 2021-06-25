@@ -22,13 +22,13 @@ void write_call(struct node_t *root, FILE **trie_json, char *buffer) {
         if(root->children[i] != NULL){
             
             jwObj_object(letter);
-            write_call(root->children[i], trie_json, buffer);
             if(root->children[i]->isEndOfWord == 1){
                 jwObj_int("isEndOfWord", 1);
             }
             else{
                 jwObj_int("isEndOfWord", 0);
             }
+            write_call(root->children[i], trie_json, buffer);
             jwEnd();
 
         }

@@ -8,45 +8,70 @@
 
 #include "../../libs/trie.h"
 
+#include "../../libs/file_contents_to_string.h"
 
 // ============================================================================================= //
 
 
-int check_trie(char *string) {
+int check_trie(char *word) {
 	//> Check if the entered word is in the trie.json
 	//> return 1 if it is
 	//> return 0 if it isn't
 
-	FILE *trie_json = fopen("../json/trie.json", "r");
+	FILE* trie_json = fopen("../json/trie.json", "r");
+	char* json_string = copyFileContentsToString(&trie_json);
 
-	//cheteneto stava tuk
+	int element;
+	
+    
+    char* ending = "isEndOfWord'";
+    int lenght = strlen(word);
+    char* new_word = (char *)malloc(4*sizeof(char));
+    char* symbol_holder = "'";
+    
+    int j = 0;
+    for(int i = 0; i <= 4 * lenght; i+= 4,j++) {
 
-	fclose(trie_json);
+        new_word[i] = '{';
+        new_word[i+1] = symbol_holder[0];
+        new_word[i+2] = word[j];
+        new_word[i+3] = symbol_holder[0];
 
-	return 1;
+		int new_word_len = strlen(new_word);
+        new_word = realloc(new_word, (4 + new_word_len)*sizeof(char));
+    }
+    
+    new_word = realloc(new_word, (strlen(ending) + strlen(new_word))*sizeof(char)); 
+
+    strcat(new_word, ending);
+
+	element = jRead_int(json_string, new_word, NULL);
+
+	free(new_word);
+	return element;
 }
 
 
-int check_trie_temp(char *word) {
-    // TEMPORARY
-    // Check if the word is in the trie structure (not the json file)
+// int check_trie_temp(char *word) {
+//     // TEMPORARY
+//     // Check if the word is in the trie structure (not the json file)
 
-    int level;
-    int length = strlen(word);
-    int index;
-    struct node_t *pCrawl = &dict_trie_root;
+//     int level;
+//     int length = strlen(word);
+//     int index;
+//     struct node_t *pCrawl = &dict_trie_root;
 
-    for (level = 0; level < length; level++)
-    {
-        index = (int)word[level] - (int)'a';
+//     for (level = 0; level < length; level++)
+//     {
+//         index = (int)word[level] - (int)'a';
 
-        if (!pCrawl->children[index])
-            return 0;
+//         if (!pCrawl->children[index])
+//             return 0;
 
-        pCrawl = pCrawl->children[index];
-    }
+//         pCrawl = pCrawl->children[index];
+//     }
 
-    return (pCrawl != NULL && pCrawl->isEndOfWord);
+//     return (pCrawl != NULL && pCrawl->isEndOfWord);
 
 /*
     struct node_t *temp = &dict_trie_root;
@@ -64,9 +89,9 @@ int check_trie_temp(char *word) {
     return (temp != NULL && temp->isEndOfWord);
     */
 
-}
+// }
 
-extern int enter_and_check(char rand_letters[], int letters, int* points){
+extern int enter_and_check(char rand_letters[], int letters, int* points) {
 
 	char word[letters];
 	printf("\nEnter word (or enter 9 to skip level):  ");
@@ -106,14 +131,17 @@ extern int enter_and_check(char rand_letters[], int letters, int* points){
 		}
 	}
 
+
 	// Check if the entered word is in the dict_trie
-	if(check_trie_temp(word) == 0) {
+
+	if(check_trie(word) == 0) {
 		// If it isn't => round points are 0
 		count = 0;
 		printf("This word is not in the dictionary\n");
 		printf("Try again(or skip) \n");
 		return 0;
 	}
+
 
 	*points += count;
 	printf("Total points: %d\n", *points);
@@ -123,7 +151,7 @@ extern int enter_and_check(char rand_letters[], int letters, int* points){
 
 
 //  Function that generates random letters for one round and prints them
-extern void letter_generation(int letters, int* points){
+extern void letter_generation(int letters, int* points) {
     int random_letter;
     char array[letters + 1];
     char vowels[] = {'a','e','i','o','u','y'};
@@ -134,7 +162,7 @@ extern void letter_generation(int letters, int* points){
     array[0] = random_letter;
 	printf("\n %c ", array[0]);
 	
-    for(int i=0; i < letters - 1; i++){
+    for(int i = 0; i < letters - 1; i++){
         // formula for generating a random letter -> (rand() % (upper - lower + 1)) + lower;
         random_letter = (rand() % (122 - 97 + 1)) + 97; 
         array[i+1] = random_letter;
@@ -151,7 +179,7 @@ extern void letter_generation(int letters, int* points){
 	}while(flag == 0);
 }
 
-extern void startGame(int letters, int rounds){
+extern void startGame(int letters, int rounds) {
 	int points = 0;
 		
 	for(int i = 0; i < rounds; i++){
