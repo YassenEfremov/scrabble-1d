@@ -71,11 +71,49 @@ void letters_from_file(int* letters){ // function to read the amount of letters 
 }
 */
 
+extern void change_letters(int changes, int rounds){
+		
+	FILE* settings_json = fopen("../json/settings.json", "w");
+	
+	if(!settings_json){
+		printf("\nFile doesn't exist! ");
+		return;
+	}
+	
+	char buffer[70];
+	jwOpen(buffer, sizeof(buffer), JW_OBJECT, JW_PRETTY);
+	jwObj_int("letters", changes);
+	jwObj_int("rounds", rounds);
+	jwClose();
+	fwrite(buffer, sizeof(buffer), 1, settings_json);
+	
+	fclose(settings_json);
+}
+
+extern void change_rounds(int letters, int changes){
+		
+	FILE* settings_json = fopen("../json/settings.json", "w");
+	
+	if(!settings_json){
+		printf("\nFile doesn't exist! ");
+		return;
+	}
+	
+	char buffer[40];
+	jwOpen(buffer, sizeof(buffer), JW_OBJECT, JW_PRETTY);
+	jwObj_int("letters", letters);
+	jwObj_int("rounds", changes);
+	jwClose();
+	fwrite(buffer, sizeof(buffer), 1, settings_json);
+	
+	fclose(settings_json);
+}
+
 // --------------------------------------------------------------------------------------------- // 
 extern void gameSettings(int *letters, int *rounds) {
     int choice;    
-    int num_letters2;
-    int num_rounds2;
+    int new_letters;
+    int new_rounds;
     
     do{
 
@@ -91,15 +129,16 @@ extern void gameSettings(int *letters, int *rounds) {
 
             do{
                 printf("How many letters do you want: ");
-                scanf("%d", &num_letters2);
+                scanf("%d", &new_letters);
                 
-                if(num_letters2 < 3 || num_letters2 > 26){
+                if(new_letters < 3 || new_letters > 26){
                     printf("\nInvalid, try again !\n");
                     continue;
                 }
                 
                 flag = 1;
-                *letters = num_letters2;
+                change_letters(new_letters, *rounds);
+                
                 printf("Successfully updated!");
             }while(flag != 1);
             
@@ -109,15 +148,15 @@ extern void gameSettings(int *letters, int *rounds) {
             
             do{
                 printf("How many rounds do you want: ");
-                scanf("%d", &num_rounds2);    
+                scanf("%d", &new_rounds);    
                     
-                if(num_rounds2 < 1 || num_rounds2 > 100){
+                if(new_rounds < 1 || new_rounds > 100){
                     printf("\nInvalid, try again ! \n");
                     continue;    
                 }
                 
                 flag = 1;
-                *rounds = num_rounds2;
+                change_rounds(*letters, new_rounds);
                 printf("Successfully updated!");
             }while(flag != 1);
             
