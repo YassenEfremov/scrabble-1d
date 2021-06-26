@@ -3,6 +3,9 @@
 #include <string.h>
 #include <ctype.h>
 
+#include "../../libs/jRead.h"
+#include "../../libs/jWrite.h"
+
 
 // THESE WILL BE REPLACED WITH JSON! (possibly)
 // v v v v v v v v v v v v v v v v v v v v v v

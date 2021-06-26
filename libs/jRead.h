@@ -6,6 +6,9 @@
 // uncomment this if you really want to use double quotes in query strings instead of '
 //#define JREAD_DOUBLE_QUOTE_IN_QUERY
 
+#ifndef JREAD	// JREAD include guards
+#define JREAD
+
 //
 // return dataTypes:
 #define JREAD_ERROR		0		// general error, eof etc.
@@ -96,8 +99,8 @@ char * jReadParam( char *pJson, char *pQuery, struct jReadElement *pResult, int 
 char *jReadArrayStep( char *pJsonArray, struct jReadElement *pResult );
 
 
-#define EXPORT_OPTIONAL_FUNCTIONS
-#ifdef EXPORT_OPTIONAL_FUNCTIONS 
+//#define EXPORT_OPTIONAL_FUNCTIONS
+//#ifdef EXPORT_OPTIONAL_FUNCTIONS 
 
 //------------------------------------------------------
 // Optional Helper Functions
@@ -124,5 +127,7 @@ int jReadStrcmp( struct jReadElement *j1, struct jReadElement *j2 ); // compare 
 // copy element to '\0'-terminated buffer
 char * jRead_strcpy( char *destBuffer, int destLength, struct jReadElement *pElement );
 
-#endif
+//#endif
+
+#endif // JREAD include guards
 // end of jRead.h
