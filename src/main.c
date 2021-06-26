@@ -7,8 +7,9 @@
 #include "./game_logic/game_logic.h"
 #include "./game_settings/game_settings.h"
 
-#include "./dictionary_handling/dict_to_trie.h"
 #include "./dictionary_handling/add_word_to_dict.h"
+#include "./dictionary_handling/dict_to_trie.h"
+#include "./dictionary_handling/trie_to_json.h"
 
 
 // ============================================================================================= //
@@ -40,38 +41,41 @@ void startingMenu() {
     int rounds = 10; // default
 	int value;
 
+	struct node_t *trie_root;
+    //for(int i = 0; i < 26; i++) trie_root->children[i] = NULL;
+    //trie_root->isEndOfWord = 0;
+
 	system("clear");
 	
 	do {
 	
-			printf(
-				"\n"
-				"\n"
-				"			SCRABBLE\n" 
-				"		  --------------------\n"
-				"\n"
-				"		(1)	 New Game\n"
-    			"		(2)	 Settings\n" 
-    			"		(3)	 Add word\n"
-    			"		(4)	 Exit	\n"
-				"\n"
-				"\n"
-				"______________________________________________________\n"
-			);
-			printf("> ");
-			scanf("%s", menu);
+		printf(
+			"\n"
+			"\n"
+			"			SCRABBLE\n" 
+			"		  --------------------\n"
+			"\n"
+			"		(1)	 New Game\n"
+			"		(2)	 Settings\n" 
+			"		(3)	 Add word\n"
+			"		(4)	 Exit	\n"
+			"\n"
+			"\n"
+			"______________________________________________________\n"
+		);
+		printf("> ");
+		scanf("%s", menu);
 
-			//turn char value into int
-			value = atoi(menu);
-			system("clear");
+		//turn char value into int
+		value = atoi(menu);
+		system("clear");
 
 	    switch(value){
 
 	    	case 1:
 				system("clear");
-				dictToTrie();	// TEMPORARY
+				// Check if the dictionary has changed while the game hasn't been runnging		// TO DO
                 startGame(letters, rounds); 	// start a game
-				trie_delete(&dict_trie_root);	// TEMPORARY
 				break;
 			
 	    	case 2:
@@ -82,12 +86,15 @@ void startingMenu() {
 			
 	    	case 3:
 				system("clear");
-				addWordToDict();	// add word to the dictionary
-				dictToTrie();		// generate trie from dictionary
+				addWordToDict();				// add word to the dictionary
+				trie_root = dictToTrie();		// generate trie from dictionary
+				trieToJson(trie_root);			// write generated trie to json
+				trie_delete(trie_root);			// free the memory for trie
 				break;
 			
 	    	case 4:
                 system("clear"); 
+				free(trie_root);
                 exit(EXIT_SUCCESS);	// exit the game
 	    		break;
 	    		
@@ -100,6 +107,3 @@ void startingMenu() {
 	
 	}while(1);
 }
-
-
-// ============================================================================================= //

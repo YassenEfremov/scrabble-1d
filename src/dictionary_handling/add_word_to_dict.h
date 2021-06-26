@@ -1,31 +1,43 @@
 #include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
+#include <ctype.h>
 
 #include "../../libs/file_contents_to_string.h"
+
 
 // ============================================================================================= //
 
 
-extern void addWordToDict() {
+int addWordToDict() {
 
     // Open the dictionary for appending and reading
-    FILE *dict = fopen("./dictionary_handling/dictionary.txt", "a+");
+    FILE *dict = fopen("../config/dictionary.txt", "a+");
 
     if(!dict) {
         // Catch any exeptions
-        printf("\nDictionary doesn't exist!");
-        return;
+        printf("\nError: Dictionary missing!");
+        return 2;
     }
 
     // Copy its contetnts into a buffer
-    char *buffer = copyFileContentsToString(&dict);
+    char *dict_string = copyFileContentsToString(&dict);
 
 
 
     // Take user input
-    char word[46]; 
+    char word[46];      // Longest english word is 45 letters! 
     printf("New word: ");
     scanf("%s", word);
+
+    // Convert all letters to lowercase
+    for(int i = 0; i < strlen(word); i++) {
+        word[i] = tolower(word[i]);
+    }
+    word[46] = '\0';
+
+
+    // Validation checks
 
     // Check if word is longer than allowed
     while(strlen(word) > 46) {
@@ -36,24 +48,28 @@ extern void addWordToDict() {
 
     // Check if the word is already in the dictionary
     
-    // BUG: if the entered word is part of an existing word, it's not valid!                               // TO FIX
+    char newline_word[strlen(word) + 2];     // a word with new lines at the front and back
+    sprintf(newline_word, "\n%s\n", word);
 
-    while(strstr(buffer, word) != NULL) {
-        printf("The word is already in the dictionary!\n"); 
+    while(strstr(dict_string, newline_word) != NULL) {
+        printf("This word is already in the dictionary!\n"); 
         printf("New word: ");
         scanf("%s", word);
+        sprintf(newline_word, "\n%s\n", word);
     }
 
 
 
-    // append the word
-    fprintf(dict, "\n%s", word);
+    // Append the word to the dictionary + a newline
+    fprintf(dict, "%s\n", word);
 
     system("clear");
     printf("Insert successful!\n");
 
 
-    // close the file and free the allocated memory
+    // Close the file and free the allocated memory
     fclose(dict);
-    free(buffer);
+    free(dict_string);
+
+    return 0;
 }

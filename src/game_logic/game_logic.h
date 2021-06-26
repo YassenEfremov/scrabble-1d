@@ -7,16 +7,13 @@
 #include "../../libs/jRead.h"
 
 #include "../../libs/trie.h"
-
 #include "../../libs/file_contents_to_string.h"
+
 
 // ============================================================================================= //
 
 
 int check_trie(char *word) {
-	//> Check if the entered word is in the trie.json
-	//> return 1 if it is
-	//> return 0 if it isn't
 
 	FILE* trie_json = fopen("../json/trie.json", "r");
 	char* json_string = copyFileContentsToString(&trie_json);
@@ -56,23 +53,6 @@ int check_trie(char *word) {
 //     // TEMPORARY
 //     // Check if the word is in the trie structure (not the json file)
 
-//     int level;
-//     int length = strlen(word);
-//     int index;
-//     struct node_t *pCrawl = &dict_trie_root;
-
-//     for (level = 0; level < length; level++)
-//     {
-//         index = (int)word[level] - (int)'a';
-
-//         if (!pCrawl->children[index])
-//             return 0;
-
-//         pCrawl = pCrawl->children[index];
-//     }
-
-//     return (pCrawl != NULL && pCrawl->isEndOfWord);
-
 /*
     struct node_t *temp = &dict_trie_root;
     int letter_index;
@@ -91,7 +71,7 @@ int check_trie(char *word) {
 
 // }
 
-extern int enter_and_check(char rand_letters[], int letters, int* points) {
+int enter_and_check(char rand_letters[], int letters, int* points) {
 
 	char word[letters];
 	printf("\nEnter word (or enter 9 to skip level):  ");
@@ -151,7 +131,7 @@ extern int enter_and_check(char rand_letters[], int letters, int* points) {
 
 
 //  Function that generates random letters for one round and prints them
-extern void letter_generation(int letters, int* points) {
+void letter_generation(int letters, int* points) {
     int random_letter;
     char array[letters + 1];
     char vowels[] = {'a','e','i','o','u','y'};

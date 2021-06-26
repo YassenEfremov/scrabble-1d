@@ -1,3 +1,4 @@
+
 ability
 able
 about
@@ -1495,7 +1496,3 @@ yet
 you
 zip
 zoo
-alabala
-alaa
-lazo
-yavorcarry
