@@ -12,7 +12,7 @@
 #include "./dictionary_handling/dict_to_trie.h"
 #include "./dictionary_handling/add_word_to_dict.h"
 
-#include "./ui/exit_app.h"
+#include "./ui/exit_element.h"
 #include "./ui/message_box.h"
 
 
@@ -74,20 +74,20 @@ void startingMenu() {
 	int rows, cols;
 	getmaxyx(stdscr, rows, cols);	// get the dimentions of the main screen
 
-	char *options_list[] = {
+	char *items_list[] = {
 		"New Game",
 		"Settings",
 		"Add word",
 		"Exit"
 	};
-	int num_of_options = sizeof(options_list)/sizeof(options_list[0]);
+	int num_of_items = sizeof(items_list)/sizeof(items_list[0]);
 
 	ITEM *curr_item;
 	int key;
 	int curr_item_index;
 
 	
-
+	// --------------------------------------------------------------------------------------------- //
 	// Main menu
 
 	// Title
@@ -104,39 +104,41 @@ void startingMenu() {
 	attroff(A_BOLD);
 
 	// Options
-	ITEM **options = (ITEM **)calloc(num_of_options + 1, sizeof(ITEM *));
-	for(int i = 0; i < num_of_options; i++) {
-		options[i] = new_item(options_list[i], "");		// Name each option
+	ITEM **items = (ITEM **)calloc(num_of_items + 1, sizeof(ITEM *));
+	for(int i = 0; i < num_of_items; i++) {
+		items[i] = new_item(items_list[i], "");		// Name each option
 	}
-	options[num_of_options] = NULL;
+	items[num_of_items] = NULL;
 
 	// Menu
-	WINDOW *main_menu_win = derwin(stdscr, num_of_options, 12, rows/3 + 3, cols/2 - 6);
-	MENU *main_menu = new_menu((ITEM **)options);
+	WINDOW *main_menu_win = derwin(stdscr, num_of_items, 12, rows/3 + 3, cols/2 - 6);
+	MENU *main_menu = new_menu((ITEM **)items);
 
 	// Menu settings	
 	set_menu_sub(main_menu, main_menu_win);
 	set_menu_mark(main_menu, "> ");
 	set_menu_fore(main_menu, A_BOLD);
-	
-	post_menu(main_menu);
 
-	
 
+	// --------------------------------------------------------------------------------------------- //
 	// Message window
 
 	// This window is used to display messages ingame
-	msg_win = derwin(stdscr, 1, MSG_LEN, rows/2 + 6, cols/2 - MSG_LEN/2);
+	msg_win = derwin(stdscr, 1, MSG_LEN, rows/2 + 6, cols/2 - MSG_LEN/2);	// DEFINED GLOBALLY IN message_box.h
 
 	// Navigation guide message
 	char *nav_guide_msg = "(Use arrow keys to navigate)";
 	char *soon_msg = "Coming soon!";
 	message_log(nav_guide_msg);
 
+
+	// Post the menu
+	post_menu(main_menu);
+
 	refresh();
 
 
-
+	// --------------------------------------------------------------------------------------------- //
 	// Navigation
 	do {
 		key = getch();
@@ -144,6 +146,8 @@ void startingMenu() {
 		curr_item = current_item(main_menu);
 
 		switch(key) {
+			// Navigation with arrow keys
+
 			case KEY_DOWN:
 				menu_driver(main_menu, REQ_DOWN_ITEM);
 				break;
@@ -152,26 +156,33 @@ void startingMenu() {
 				menu_driver(main_menu, REQ_UP_ITEM);
 				break;
 
-			case 10:	// Enter key
+			case 10:
+				// Enter key
 				curr_item_index = item_index(curr_item);
 
 				switch(curr_item_index) {
 					case 0:
+						// Start a game
+						//startGame(letters, rounds);
 						message_log(soon_msg);
 						break;
 
 					case 1:
+						// Open game settings
 						unpost_menu(main_menu);		// hide the main menu
 						gameSettings();
 						post_menu(main_menu);		// unhide the main menu
 						break;
 
 					case 2:
+						// Add a word to the dictionary
+						//addWordToDict();
 						message_log(soon_msg);
 						break;
 
 					case 3:
-						exitMenu(&main_menu, &options, num_of_options);
+						// Exit the whole app
+						exitMenu(&main_menu, &items, num_of_items);
 						endwin();
 						exit(EXIT_SUCCESS);
 				}
@@ -181,6 +192,3 @@ void startingMenu() {
 
 	}while(1);
 }
-
-
-// ============================================================================================= //

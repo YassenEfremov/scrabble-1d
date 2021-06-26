@@ -17,7 +17,8 @@
                 "${fileDirname}/${fileBasenameNoExtension}",
                 "-I.",
                 "-lncurses",
-                "-lmenu"
+                "-lmenu",
+                "-lform"
             ],
             "options": {
                 "cwd": "${workspaceFolder}"

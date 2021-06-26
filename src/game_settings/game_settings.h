@@ -4,8 +4,13 @@
 #include <ctype.h>
 #include <ncurses.h>
 #include <menu.h>
+#include <form.h>
 
-#include "../ui/exit_app.h"
+#include "../ui/exit_element.h"
+#include "../ui/message_box.h"
+
+
+// ============================================================================================= //
 
 
 // THESE WILL BE REPLACED WITH JSON! (possibly)
@@ -172,10 +177,12 @@ extern void write_settings(int line) {
 }
 
 
-// --------------------------------------------------------------------------------------------- //
+// ============================================================================================= //
 
 
 extern void gameSettings() {
+    
+    cbreak();
     refresh();
 
     // Predefined data used by ncurses
@@ -183,51 +190,83 @@ extern void gameSettings() {
     int rows, cols;
 	getmaxyx(stdscr, rows, cols);	// get the dimentions of the main screen
 
-    char *options_list[] = {
+    char *items_list[] = {
 		"Letters:",
 		"Rounds:",
 		"Back"
 	};
-    int num_of_options = sizeof(options_list)/sizeof(options_list[0]);
+    int num_of_items = sizeof(items_list)/sizeof(items_list[0]);
+    int num_of_fields = 2;
 
 	ITEM *curr_item;
 	int key;
 	int curr_item_index;
 
 
-
+    // --------------------------------------------------------------------------------------------- //
     // Settings menu
 
     // Options
-	ITEM **options = (ITEM **)calloc(num_of_options + 1, sizeof(ITEM *));
-	for(int i = 0; i < num_of_options; i++) {
-		options[i] = new_item(options_list[i], "");		// Name each option
+	ITEM **items = (ITEM **)calloc(num_of_items + 1, sizeof(ITEM *));
+	for(int i = 0; i < num_of_items; i++) {
+		items[i] = new_item(items_list[i], "");		// Name each option
 	}
-    options[num_of_options] = NULL;
+    items[num_of_items] = NULL;
 
     // Menu
-	WINDOW *settings_menu_win = derwin(stdscr, num_of_options, 10, rows/3 + 3, cols/2 - 6);
+	WINDOW *settings_menu_win = derwin(stdscr, num_of_items, 14, rows/3 + 3, cols/2 - 7);
     keypad(settings_menu_win, TRUE);
-	MENU *settings_menu = new_menu((ITEM **)options);
+    //wbkgd(settings_menu_win, COLOR_PAIR(99));
+	MENU *settings_menu = new_menu((ITEM **)items);
 	
     // Menu settings
 	set_menu_sub(settings_menu, settings_menu_win);
 	set_menu_mark(settings_menu, "> ");
 	set_menu_fore(settings_menu, A_BOLD);
 	
-	post_menu(settings_menu);
 
-    wrefresh(settings_menu_win);
+    // --------------------------------------------------------------------------------------------- //
+    // Settings form
+
+    // Fields
+    FIELD **settings_fields = (FIELD **)calloc(num_of_fields + 1, sizeof(FIELD *));
+
+	settings_fields[0] = new_field(1, 2, 0, 11, 0, 0);
+    settings_fields[1] = new_field(1, 2, 1, 11, 0, 0);
+	settings_fields[num_of_fields] = NULL;
+
+    // Field settings
+    set_field_type(settings_fields[0], TYPE_NUMERIC, 0, 3, 26);          // not sure about these
+    set_field_type(settings_fields[1], TYPE_NUMERIC, 0, 1, 99);          // -.-
+
+    for(int i = 0; i < num_of_fields; i++) {
+	    set_field_back(settings_fields[i], A_UNDERLINE);
+	    field_opts_off(settings_fields[i], O_AUTOSKIP);
+    }
+
+    // Form
+	FORM *settings_form = new_form(settings_fields);
+    set_form_sub(settings_form, settings_menu_win);
 
 
+    // First post the form, then the manu
+    post_form(settings_form);
+    post_menu(settings_menu);
 
+	wrefresh(settings_menu_win);
+
+
+    // --------------------------------------------------------------------------------------------- //
 	// Navigation
+
 	do {
 		key = getch();
 		werase(msg_win);
 		curr_item = current_item(settings_menu);
 
 		switch(key) {
+            // Navigation with arrow keys
+
 			case KEY_DOWN:
 				menu_driver(settings_menu, REQ_DOWN_ITEM);
 				break;
@@ -236,57 +275,66 @@ extern void gameSettings() {
 				menu_driver(settings_menu, REQ_UP_ITEM);
 				break;
 
-			case 10:	// Enter key
+			case 10:
+                // Enter key
 				curr_item_index = item_index(curr_item);
+                set_menu_mark(settings_menu, "  ");
 
 				switch(curr_item_index) {
 					case 0:
-						//mvwaddstr(msg_win, 0, msg_len/2 - strlen(soon_msg)/2, soon_msg);
-                        // change number of letters
+                        // Enter letters field
+                        curs_set(1);
+                        form_driver(settings_form, REQ_FIRST_FIELD);    // The first field is the first one
+                        form_driver(settings_form, REQ_END_FIELD);
+
+                        do {
+                            key = wgetch(settings_menu_win);
+
+                            if(key == KEY_BACKSPACE) {
+                                form_driver(settings_form, REQ_DEL_CHAR);
+                                form_driver(settings_form, REQ_PREV_CHAR);
+                            }else {
+                                form_driver(settings_form, key);
+                            }
+                        }while(key != 10);
+
+                        curs_set(0);
 						break;
 
 					case 1:
-						//mvprintw(rows/2 + 6, cols/2 - 8, "Coming soon^(tm)!");
-						// change number of rounds
+						// Enter rounds field
+                        curs_set(1);
+                        form_driver(settings_form, REQ_LAST_FIELD);     // The last field is the second one
+                        form_driver(settings_form, REQ_END_FIELD);
+
+                        do {
+                            key = wgetch(settings_menu_win);
+                            //form_driver(settings_form, REQ_LAST_FIELD);
+
+                            if(key == KEY_BACKSPACE) {
+                                form_driver(settings_form, REQ_DEL_CHAR);
+                                form_driver(settings_form, REQ_PREV_CHAR);
+                            }else {
+                                form_driver(settings_form, key);
+                            }
+                        }while(key != 10);
+
+                        curs_set(0);
 						break;
 
 					case 2:
-                        exitMenu(&settings_menu, &options, num_of_options);
+                        // Exit settings menu
+                        //> write the entered settings to the json file             // TO DO
+                        exitForm(&settings_form, &settings_fields, num_of_fields);
+                        exitMenu(&settings_menu, &items, num_of_items);
                         delwin(settings_menu_win);
+                        raw();
                         return;
 				}
 				break;
 		}
+        set_menu_mark(settings_menu, "> ");
 		wrefresh(msg_win);
 
 	}while(1);
-
-
-
-
-
-   /* 
-    int option;
-
-    do {
-        printf("     (1)    Change number of letters\n");
-        printf("     (2)    Change number of rounds\n");
-        printf("     (3)    < Back\n");
-        printf("> ");
-        scanf("%d", &option);
-
-        if(option < 1 || option > 3){
-            system("clear");
-            printf("Invalid, try again ! \n\n");
-        }
-
-    }while(option < 1 || option > 3);
-    
-    if (option == 3){
-
-        return;
-    }
-
-    write_settings(option);
-    */
 }
