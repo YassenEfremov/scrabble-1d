@@ -73,7 +73,7 @@ void letters_from_file(int* letters){ // function to read the amount of letters 
 
 void change_letters(int new_letters, int rounds){
 		
-	FILE* settings_json = fopen("../json/settings.json", "w");
+	FILE* settings_json = fopen("../config/settings.json", "w");
 	
 	if(!settings_json){
 		printf("\nFile doesn't exist! ");
@@ -98,7 +98,7 @@ void change_letters(int new_letters, int rounds){
 
 void change_rounds(int new_rounds, int letters){
 		
-	FILE* settings_json = fopen("../json/settings.json", "w");
+	FILE* settings_json = fopen("../config/settings.json", "w");
 	
 	if(!settings_json){
 		printf("\nFile doesn't exist! ");

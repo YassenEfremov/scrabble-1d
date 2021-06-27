@@ -80,17 +80,15 @@ int check_trie(char *word) {
 int enter_and_check(char rand_letters[], int letters, int* points) {
 
 	char word[letters];
-	printf("\nEnter word (or enter 9 to skip level):  ");
+	printf("\nEnter word (Enter 9 to skip round):  ");
 	scanf("%s", word);
 	
 	for(int i = 0; i < strlen(word); i++){
 		word[i] = tolower(word[i]);
 	}
 	
-	char quit_word[] = "9";
-
-	// If we enter 9 => end round	
-	if(strcmp(word, quit_word) == 0){
+	// If we enter 9 => end round
+	if(strcmp(word, "9") == 0){
 		printf("> Skipped\n");
 		return -1;
 	}
@@ -135,7 +133,7 @@ int enter_and_check(char rand_letters[], int letters, int* points) {
 
 
 	*points += count;
-	printf("Total points: %d\n", *points);
+	printf("\n\nTotal points: %d\n", *points);
 
 	return 1;
 }
@@ -160,7 +158,7 @@ void letter_generation(int letters, int *points) {
         // formula for generating a random letter -> (rand() % (upper - lower + 1)) + lower;
         random_letter = (rand() % (122 - 97 + 1)) + 97; 
         array[i+1] = random_letter;
-        printf("| %c ", array[i+1]);
+        printf(" %c ", array[i+1]);
     }
 	printf("\n");
     

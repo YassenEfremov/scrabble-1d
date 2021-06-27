@@ -27,11 +27,17 @@ int addWordToDict() {
 
     // Take user input
 
-    // If the user presses a specific key => return to main menu            // TO DO
-
     char word[46];      // Longest english word is 45 letters! 
-    printf("New word (Press <key> to cancel): ");
+    printf("New word (Enter 9 to cancel): ");
     scanf("%s", word);
+
+    // If we enter 9 => end round
+    if(strcmp(word, "9") == 0){
+        free(dict_string);
+        system("clear");
+		return -1;
+	}
+
 
     // Convert all letters to lowercase
     for(int i = 0; i < strlen(word); i++) {
@@ -46,7 +52,7 @@ int addWordToDict() {
     while(strlen(word) > 46) {
         printf("Longest word is 46 letters!\n");
         printf("New word: ");
-        scanf("%s", word);  // the MAXIMUM word lengh is 46
+        scanf("%s", word);  // the MAXIMUM word lengh is 45
     }
 
     // Check if the word is already in the dictionary

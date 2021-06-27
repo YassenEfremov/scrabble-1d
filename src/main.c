@@ -36,29 +36,33 @@ int main() {
 
 void read_settings(int* letters, int* rounds){
 	
-	FILE *fp = fopen("../json/settings.json", "r");
-	
+	FILE *fp = fopen("../config/settings.json", "r");
 	char* json_string = copyFileContentsToString(&fp);
+	fclose(fp);
 	
 	*letters = jRead_int(json_string, "{'letters'", NULL);
 	*rounds = jRead_int(json_string, "{'rounds'", NULL);
 	
-	fclose(fp);
 	free(json_string);
 }
 
+
+// --------------------------------------------------------------------------------------------- //
+
+
 void startingMenu() {
 
-	char menu[30];
-	int letters; // Default
-    int rounds; // Default
+	char menu[1];
 	int value;
-	int to_free = 0;	// flag
+	//int to_free = 0;	// flag
+
+	int letters;
+    int rounds;
 
 	struct node_t *trie_root;
 	
+
 	read_settings(&letters, &rounds);
-	
 	system("clear");
 	
 	do {
@@ -104,10 +108,13 @@ void startingMenu() {
 	    	case 3:
 				system("clear");
 				addWordToDict();				// add word to the dictionary
+
 				trie_root = dictToTrie();		// generate trie from dictionary
 				trieToJson(trie_root);			// write generated trie to json
+
 				trie_delete(trie_root);			// free the memory for trie
-				to_free = 1;
+				free(trie_root);
+				//to_free = 1;
 				break;
 			
 	    	case 4:
@@ -118,7 +125,7 @@ void startingMenu() {
 	    	default:
                 // invalid option
                 system("clear");
-				if(to_free) free(trie_root);	// if we have done anything withe the tire => free its root
+				//if(to_free) free(trie_root);	// if we have done anything with the tire => free its root
                 printf("Invalid, try again!\n");
                 break;
 	    }

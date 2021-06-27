@@ -21,5 +21,5 @@ obj/%.o: %.c $(DEPS)
 	$(CC) -c -o $@ $< $(CFLAGS)
 
 # To build the main executable you need all of the object files
-main: $(OBJ)
+scrabble: $(OBJ)
 	$(CC) -o $@ ./obj/main.o ./obj/jWrite.o ./obj/jRead.o $(CFLAGS)
