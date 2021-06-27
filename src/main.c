@@ -3,12 +3,14 @@
 #include <string.h>
 
 #include "../libs/trie.h"
+#include "../libs/file_contents_to_string.h"
 
 #include "./game_logic/game_logic.h"
 #include "./game_settings/game_settings.h"
 
-#include "./dictionary_handling/dict_to_trie.h"
 #include "./dictionary_handling/add_word_to_dict.h"
+#include "./dictionary_handling/dict_to_trie.h"
+#include "./dictionary_handling/trie_to_json.h"
 
 
 // ============================================================================================= //
@@ -16,13 +18,13 @@
 
 
 void startingMenu();	// Starts a game of scrabble
-
+void read_settings();
 
 // ============================================================================================= //
 
 
 int main() {
-    
+
    startingMenu();
 
    return 0;
@@ -32,58 +34,87 @@ int main() {
 // ============================================================================================= //
 /* Function definitoins */
 
+void read_settings(int* letters, int* rounds){
+	
+	FILE *fp = fopen("../config/settings.json", "r");
+	char* json_string = copyFileContentsToString(&fp);
+	fclose(fp);
+	
+	*letters = jRead_int(json_string, "{'letters'", NULL);
+	*rounds = jRead_int(json_string, "{'rounds'", NULL);
+	
+	free(json_string);
+}
+
+
+// --------------------------------------------------------------------------------------------- //
+
 
 void startingMenu() {
 
-	char menu[30];
-	int letters = 10; // default
-    int rounds = 10; // default
+	char menu[1];
 	int value;
+	//int to_free = 0;	// flag
 
+	int letters;
+    int rounds;
+
+	struct node_t *trie_root;
+	
+
+	read_settings(&letters, &rounds);
 	system("clear");
 	
 	do {
 	
-			printf(
-				"\n"
-				"\n"
-				"			SCRABBLE\n" 
-				"		  --------------------\n"
-				"\n"
-				"		(1)	 New Game\n"
-    			"		(2)	 Settings\n" 
-    			"		(3)	 Add word\n"
-    			"		(4)	 Exit	\n"
-				"\n"
-				"\n"
-				"______________________________________________________\n"
-			);
-			printf("> ");
-			scanf("%s", menu);
+		printf(
+			"\n"
+			"\n"
+			"			SCRABBLE\n" 
+			"		  --------------------\n"
+			"\n"
+			"		(1)	 New Game\n"
+			"		(2)	 Settings\n" 
+			"		(3)	 Add word\n"
+			"		(4)	 Exit	\n"
+			"\n"
+			"\n"
+			"______________________________________________________\n"
+		);
+		printf("> ");
+		scanf("%s", menu);
 
-			//turn char value into int
-			value = atoi(menu);
-			system("clear");
+		//turn char value into int
+		value = atoi(menu);
+		system("clear");
 
 	    switch(value){
 
 	    	case 1:
 				system("clear");
-				dictToTrie();	// TEMPORARY
+				//> Check if the dictionary has changed while the game hasn't been runnging		// TO DO
+				//> if it has => update the json trie, flag to_free = 1
                 startGame(letters, rounds); 	// start a game
-				trie_delete(&dict_trie_root);	// TEMPORARY
+				system("clear");
 				break;
 			
 	    	case 2:
 				system("clear");
 				gameSettings(&letters, &rounds);		// open game settings
+				read_settings(&letters, &rounds);
 				system("clear");
 				break;
 			
 	    	case 3:
 				system("clear");
-				addWordToDict();	// add word to the dictionary
-				dictToTrie();		// generate trie from dictionary
+				addWordToDict();				// add word to the dictionary
+
+				trie_root = dictToTrie();		// generate trie from dictionary
+				trieToJson(trie_root);			// write generated trie to json
+
+				trie_delete(trie_root);			// free the memory for trie
+				free(trie_root);
+				//to_free = 1;
 				break;
 			
 	    	case 4:
@@ -94,12 +125,10 @@ void startingMenu() {
 	    	default:
                 // invalid option
                 system("clear");
-                printf("An Error has appiered!\n");
+				//if(to_free) free(trie_root);	// if we have done anything with the tire => free its root
+                printf("Invalid, try again!\n");
                 break;
 	    }
 	
 	}while(1);
 }
-
-
-// ============================================================================================= //

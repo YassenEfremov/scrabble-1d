@@ -9,72 +9,44 @@
 // ============================================================================================= //
 
 
-void trieWriteBinary(struct node_t *root, FILE **trie_bin) {
-    // (recursive)
-
-    // Base case
-    if(root == NULL) return;
-
-    for(int i = 0; i < 26; i++) {
-        // Go through every child of every node
-        if(root->children[i] != NULL) {
-            trieWriteBinary(root->children[i], trie_bin);
-            
-            // Write the node to the file
-            fwrite(root, sizeof(struct node_t), 1, *trie_bin);
-        }
-    }
-}
-
-
-void trieGenerate(char *buffer) {
+struct node_t *trieGenerate(char *dict_contents) {
 
     // Start constructing the trie
-    //struct node_t dict_trie_root;
-    // Set the default values for root
-    for(int i = 0; i < 26; i++) dict_trie_root.children[i] = NULL;
-    dict_trie_root.isEndOfWord = 0;
+
+    struct node_t *temp_trie_root = trie_create_node();
 
     // While splitting the initial string into words, start inserting into the tree
-    char *token = strtok(buffer, "\n");
-    
+    char *token = strtok(dict_contents, "\n");
     while(token != NULL) {
         // Insert every seperate word
-        trie_insert(&dict_trie_root, token);
+        trie_insert(temp_trie_root, token);
         token = strtok(NULL, "\n");  // get the next word
     }
 
-
-    // Write the tree into a binary file
-    FILE *trie_bin = fopen("../bin/trie.bin", "wb");
-
-    // Treverse the trie and write it to a binary file (recursively)
-    trieWriteBinary(&dict_trie_root, &trie_bin);
-
-
-    fclose(trie_bin);
-    //trie_delete(&dict_trie_root);    // free the memory for the trie      // TEMPORARY
+    return temp_trie_root;
 }
 
 
-extern void dictToTrie() {
+struct node_t *dictToTrie() {
 
-    // Open the dictionary for reading 
-    FILE *dict  = fopen("./dictionary_handling/dictionary.txt", "r");
+    FILE *dict  = fopen("../config/dictionary.txt", "r");
 
     if(!dict) {
         // Catch any exeptions
-        printf("\nDictionary doesn't exist!");
-        return;
+        printf("\nError: Dictionary missing!");
+        return NULL;
     }
 
-    // Copy its contetnts into a buffer
-    char *buffer = copyFileContentsToString(&dict);
+    // Copy the dictionary contents to a string buffer
+    char *dict_contents = copyFileContentsToString(&dict);
 
-    fclose(dict);
+    fclose(dict);   // we don't need the file anymore, close it
 
-    // Pass the buffer to generate the tree
-    trieGenerate(buffer);                                   // TEMPORARY
+    // Generate the trie from the buffer
+    struct node_t *temp_trie_root = trieGenerate(dict_contents);
 
-    free(buffer);   // free the momory for the buffer
+
+    free(dict_contents);   // free the momory for the buffer
+
+    return temp_trie_root;  // return the generated trie
 }
