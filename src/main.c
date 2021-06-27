@@ -40,10 +40,9 @@ void startingMenu() {
 	int letters = 10; // default
     int rounds = 10; // default
 	int value;
+	int to_free = 0;	// flag
 
 	struct node_t *trie_root;
-    //for(int i = 0; i < 26; i++) trie_root->children[i] = NULL;
-    //trie_root->isEndOfWord = 0;
 
 	system("clear");
 	
@@ -74,8 +73,10 @@ void startingMenu() {
 
 	    	case 1:
 				system("clear");
-				// Check if the dictionary has changed while the game hasn't been runnging		// TO DO
+				//> Check if the dictionary has changed while the game hasn't been runnging		// TO DO
+				//> if it has => update the json trie, flag to_free = 1
                 startGame(letters, rounds); 	// start a game
+				system("clear");
 				break;
 			
 	    	case 2:
@@ -90,18 +91,19 @@ void startingMenu() {
 				trie_root = dictToTrie();		// generate trie from dictionary
 				trieToJson(trie_root);			// write generated trie to json
 				trie_delete(trie_root);			// free the memory for trie
+				to_free = 1;
 				break;
 			
 	    	case 4:
                 system("clear"); 
-				free(trie_root);
                 exit(EXIT_SUCCESS);	// exit the game
 	    		break;
 	    		
 	    	default:
                 // invalid option
                 system("clear");
-                printf("An Error has appiered!\n");
+				if(to_free) free(trie_root);	// if we have done anything withe the tire => free its root
+                printf("Invalid, try again!\n");
                 break;
 	    }
 	

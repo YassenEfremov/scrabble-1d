@@ -69,17 +69,29 @@ void letters_from_file(int* letters){ // function to read the amount of letters 
 */
 
 // --------------------------------------------------------------------------------------------- // 
-extern void gameSettings(int *letters, int *rounds) {
+
+
+void gameSettings(int *letters, int *rounds) {
     int choice;    
     int num_letters2;
     int num_rounds2;
     
     do{
-
-        printf("     (1)    Change number of letters: \n");
-        printf("     (2)    Change number of rounds: \n");
-        printf("     (3)    < Back \n");
-        printf("> ");
+		printf(
+			"\n"
+			"\n"
+			"			SCRABBLE\n" 
+			"		  --------------------\n"
+			"\n"
+			"       (1)  Change number of letters (current: %d)\n"
+			"       (2)  Change number of rounds (current: %d)\n"
+			"       (3)  Back\n"
+			"\n"
+			"\n"
+			"______________________________________________________\n",
+            *letters, *rounds
+		);
+		printf("> ");
         scanf("%d", &choice);
 
         if(choice == 1){
@@ -87,10 +99,10 @@ extern void gameSettings(int *letters, int *rounds) {
             int flag = 0;
 
             do{
-                printf("How many letters do you want: ");
+                printf("How many letters do you want?: ");
                 scanf("%d", &num_letters2);
                 
-                if(num_letters2 < 3 || num_letters2 > 26){
+                if(num_letters2 < 2 || num_letters2 > 26){
                     printf("\nInvalid, try again !\n");
                     continue;
                 }

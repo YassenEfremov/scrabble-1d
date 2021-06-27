@@ -26,8 +26,11 @@ int addWordToDict() {
 
 
     // Take user input
+
+    // If the user presses a specific key => return to main menu            // TO DO
+
     char word[46];      // Longest english word is 45 letters! 
-    printf("New word: ");
+    printf("New word (Press <key> to cancel): ");
     scanf("%s", word);
 
     // Convert all letters to lowercase
