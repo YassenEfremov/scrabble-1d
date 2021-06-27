@@ -34,27 +34,23 @@ int main() {
 /* Function definitoins */
 
 void read_settings(int* letters, int* rounds){
-	struct jReadElement letters2;
-	struct jReadElement rounds2;
 	
 	FILE *fp = fopen("../json/settings.json", "r");
 	
-	char* jstring = copyFileContentsToString(&fp);
+	char* json_string = copyFileContentsToString(&fp);
 	
-	jRead(jstring, "{'letters'", &letters2);
-	jRead(jstring, "{'rounds'", &rounds2);
-	
-	letters = letters2.pValue;
-	rounds = rounds2.pValue;
+	*letters = jRead_int(json_string, "{'letters'", NULL);
+	*rounds = jRead_int(json_string, "{'rounds'", NULL);
 	
 	fclose(fp);
+	free(json_string);
 }
 
 void startingMenu() {
 
 	char menu[30];
-	int letters = 10; // Default
-    int rounds = 10; // Default
+	int letters; // Default
+    int rounds; // Default
 	int value;
 	
 	read_settings(&letters, &rounds);

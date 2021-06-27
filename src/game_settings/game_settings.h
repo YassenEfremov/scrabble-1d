@@ -71,7 +71,7 @@ void letters_from_file(int* letters){ // function to read the amount of letters 
 }
 */
 
-extern void change_letters(int changes, int rounds){
+void change_letters(int new_letters, int rounds){
 		
 	FILE* settings_json = fopen("../json/settings.json", "w");
 	
@@ -80,17 +80,23 @@ extern void change_letters(int changes, int rounds){
 		return;
 	}
 	
-	char buffer[70];
-	jwOpen(buffer, sizeof(buffer), JW_OBJECT, JW_PRETTY);
-	jwObj_int("letters", changes);
+    int json_size = 39;  // default size (when bot options are 2 digit numbers)
+    if(new_letters < 10) json_size -= 1;    // decrease the size by one
+    if(rounds < 10) json_size -= 1;    // decrease the size by one
+
+	char buffer[json_size];
+	jwOpen(buffer, json_size, JW_OBJECT, JW_PRETTY);
+	jwObj_int("letters", new_letters);
 	jwObj_int("rounds", rounds);
 	jwClose();
-	fwrite(buffer, sizeof(buffer), 1, settings_json);
+
+	fwrite(buffer, json_size, 1, settings_json);
 	
 	fclose(settings_json);
 }
 
-extern void change_rounds(int letters, int changes){
+
+void change_rounds(int new_rounds, int letters){
 		
 	FILE* settings_json = fopen("../json/settings.json", "w");
 	
@@ -99,18 +105,26 @@ extern void change_rounds(int letters, int changes){
 		return;
 	}
 	
-	char buffer[40];
-	jwOpen(buffer, sizeof(buffer), JW_OBJECT, JW_PRETTY);
+    int json_size = 39;  // default size (when bot options are 2 digit numbers)
+    if(new_rounds < 10) json_size -= 1;    // decrease the size by one
+    if(letters < 10) json_size -= 1;    // decrease the size by one
+
+	char buffer[json_size];
+	jwOpen(buffer, json_size, JW_OBJECT, JW_PRETTY);
 	jwObj_int("letters", letters);
-	jwObj_int("rounds", changes);
+	jwObj_int("rounds", new_rounds);
 	jwClose();
-	fwrite(buffer, sizeof(buffer), 1, settings_json);
+
+	fwrite(buffer, json_size, 1, settings_json);
 	
 	fclose(settings_json);
 }
 
+
 // --------------------------------------------------------------------------------------------- // 
-extern void gameSettings(int *letters, int *rounds) {
+
+
+void gameSettings(int *letters, int *rounds) {
     int choice;    
     int new_letters;
     int new_rounds;
@@ -150,13 +164,13 @@ extern void gameSettings(int *letters, int *rounds) {
                 printf("How many rounds do you want: ");
                 scanf("%d", &new_rounds);    
                     
-                if(new_rounds < 1 || new_rounds > 100){
+                if(new_rounds < 1 || new_rounds > 99){
                     printf("\nInvalid, try again ! \n");
                     continue;    
                 }
                 
                 flag = 1;
-                change_rounds(*letters, new_rounds);
+                change_rounds(new_rounds, *letters);
                 printf("Successfully updated!");
             }while(flag != 1);
             
