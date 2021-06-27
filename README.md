@@ -1,5 +1,4 @@
 # Версия на играта Scrabble
-Играта е разработвана главно на **Linux Mint**, затова най-вероятно не функционира на **Windows**.
 
 ## Какви са правилата?
 Играта протича по следния начин:
@@ -17,9 +16,12 @@
 За проверката на това дали една дума е валидна в дадения речник използваме дърво [Trie](https://en.wikipedia.org/wiki/Trie).
 
 ## Как мога да играя?
-- Първо изтеглете кода от **Github** чрез [този линк](https://github.com/YassenEfremov/elsys-10A-scrabble/archive/refs/heads/master.zip).
+**ВАЖНО:** Играта е разработвана главно на **Linux Mint**, затова най-вероятно не функционира на **Windows**.
+- Първо изтеглете кода от **Github** чрез:
+  - [този линк](https://github.com/YassenEfremov/elsys-10A-scrabble/archive/refs/heads/master.zip)
+  - или чрез ```git clone https://github.com/YassenEfremov/elsys-10A-scrabble```
 - Навигирайте през терминала до папката ```src/```.
-- Пуснете файла **makefile** като напишете ```make```.
+- Пуснете файла **Makefile** като напишете ```make```.
 - Стартирайте файла **main** като напишете ```./main```.
 - Готово! Би трябвало да видите основното меню на играта!
 
