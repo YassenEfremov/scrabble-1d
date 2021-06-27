@@ -3,6 +3,7 @@
 #include <string.h>
 
 #include "../libs/trie.h"
+#include "../libs/file_contents_to_string.h"
 
 #include "./game_logic/game_logic.h"
 #include "./game_settings/game_settings.h"
@@ -17,13 +18,13 @@
 
 
 void startingMenu();	// Starts a game of scrabble
-
+void read_settings();
 
 // ============================================================================================= //
 
 
 int main() {
-    
+
    startingMenu();
 
    return 0;
@@ -33,17 +34,31 @@ int main() {
 // ============================================================================================= //
 /* Function definitoins */
 
+void read_settings(int* letters, int* rounds){
+	
+	FILE *fp = fopen("../json/settings.json", "r");
+	
+	char* json_string = copyFileContentsToString(&fp);
+	
+	*letters = jRead_int(json_string, "{'letters'", NULL);
+	*rounds = jRead_int(json_string, "{'rounds'", NULL);
+	
+	fclose(fp);
+	free(json_string);
+}
 
 void startingMenu() {
 
 	char menu[30];
-	int letters = 10; // default
-    int rounds = 10; // default
+	int letters; // Default
+    int rounds; // Default
 	int value;
 	int to_free = 0;	// flag
 
 	struct node_t *trie_root;
-
+	
+	read_settings(&letters, &rounds);
+	
 	system("clear");
 	
 	do {
@@ -82,6 +97,7 @@ void startingMenu() {
 	    	case 2:
 				system("clear");
 				gameSettings(&letters, &rounds);		// open game settings
+				read_settings(&letters, &rounds);
 				system("clear");
 				break;
 			
