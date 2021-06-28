@@ -71,13 +71,13 @@ void letters_from_file(int* letters){ // function to read the amount of letters 
 }
 */
 
-void change_letters(int new_letters, int rounds){
+int change_letters(int new_letters, int rounds){
 		
 	FILE* settings_json = fopen("../config/settings.json", "w");
 	
 	if(!settings_json){
-		printf("\nFile doesn't exist! ");
-		return;
+		printf("\nError: settings.json missing! ");
+		return 2;
 	}
 	
     int json_size = 39;  // default size (when bot options are 2 digit numbers)
@@ -88,21 +88,23 @@ void change_letters(int new_letters, int rounds){
 	jwOpen(buffer, json_size, JW_OBJECT, JW_PRETTY);
 	jwObj_int("letters", new_letters);
 	jwObj_int("rounds", rounds);
-	jwClose();
+	int err_code = jwClose();
 
 	fwrite(buffer, json_size, 1, settings_json);
 	
 	fclose(settings_json);
+
+    return err_code;
 }
 
 
-void change_rounds(int new_rounds, int letters){
+int change_rounds(int new_rounds, int letters){
 		
 	FILE* settings_json = fopen("../config/settings.json", "w");
 	
 	if(!settings_json){
-		printf("\nFile doesn't exist! ");
-		return;
+		printf("\nError: settings.json missing! ");
+		return 2;
 	}
 	
     int json_size = 39;  // default size (when bot options are 2 digit numbers)
@@ -113,11 +115,13 @@ void change_rounds(int new_rounds, int letters){
 	jwOpen(buffer, json_size, JW_OBJECT, JW_PRETTY);
 	jwObj_int("letters", letters);
 	jwObj_int("rounds", new_rounds);
-	jwClose();
+	int err_code = jwClose();
 
 	fwrite(buffer, json_size, 1, settings_json);
 	
 	fclose(settings_json);
+
+    return err_code;
 }
 
 
@@ -125,7 +129,11 @@ void change_rounds(int new_rounds, int letters){
 
 
 void gameSettings(int *letters, int *rounds) {
-    int choice;    
+
+    char choice[30];    // the size of this array causes problems
+    int value;
+    int flag;
+
     int new_letters;
     int new_rounds;
     
@@ -145,53 +153,63 @@ void gameSettings(int *letters, int *rounds) {
             *letters, *rounds
 		);
 		printf("> ");
-        scanf("%d", &choice);
+        scanf("%s", choice);
 
-        if(choice == 1){
+        // turn char value to int
+        value = atoi(choice);
 
-            int flag = 0;
+        switch(value) {
 
-            do{
-                printf("How many letters do you want?: ");
-                scanf("%d", &new_letters);
-                
-                if(new_letters < 3 || new_letters > 26){
-                    printf("\nInvalid, try again !\n");
-                    continue;
-                }
-                
-                flag = 1;
-                change_letters(new_letters, *rounds);
-                
-                printf("Successfully updated!");
-            }while(flag != 1);
-            
-        }else if(choice == 2){
-        
-            int flag = 0;
-            
-            do{
-                printf("How many rounds do you want?: ");
-                scanf("%d", &new_rounds);    
+            case 1:
+                flag = 0;
+
+                do{
+                    printf("How many letters do you want?: ");
+                    scanf("%d", &new_letters);
                     
-                if(new_rounds < 1 || new_rounds > 99){
-                    printf("\nInvalid, try again ! \n");
-                    continue;    
-                }
+                    if(new_letters < 3 || new_letters > 26){
+                        printf("\nInvalid, try again !\n");
+                        continue;
+                    }
+                    
+                    flag = 1;
+                    change_letters(new_letters, *rounds);
+                    
+                    printf("Successfully updated!");
+                }while(flag != 1);
+                return;
                 
-                flag = 1;
-                change_rounds(new_rounds, *letters);
-                printf("Successfully updated!");
-            }while(flag != 1);
+            case 2:
             
-        }else if(choice == 3){
-            break;   
-        }else {
-            system("clear");
-            printf("Invalid, try again! \n\n");
-        }
+                flag = 0;
+                
+                do{
+                    printf("How many rounds do you want?: ");
+                    scanf("%d", &new_rounds);    
+                        
+                    if(new_rounds < 1 || new_rounds > 99){
+                        printf("\nInvalid, try again ! \n");
+                        continue;    
+                    }
+                    
+                    flag = 1;
+                    change_rounds(new_rounds, *letters);
+                    
+                    printf("Successfully updated!");
+                }while(flag != 1);
+                return;
+                
+            case 3:
+                return;
+
+            default:
+                // Invalid option
+                system("clear");
+                printf("Invalid, try again! \n\n");
+                break;
+            }
         
-    }while(choice < 1 || choice > 3);
+    }while(1);
     
 }
 

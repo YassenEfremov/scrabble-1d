@@ -2,4 +2,4 @@
 scrabble
 
 # Object files
-obj/**
+obj/

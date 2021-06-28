@@ -52,7 +52,7 @@ void read_settings(int* letters, int* rounds){
 
 void startingMenu() {
 
-	char menu[1];
+	char menu[1];	// the size of this array DOESN'T cause problems because we directly exit the program
 	int value;
 	//int to_free = 0;	// flag
 
@@ -84,7 +84,7 @@ void startingMenu() {
 		printf("> ");
 		scanf("%s", menu);
 
-		//turn char value into int
+		//turn char value to int
 		value = atoi(menu);
 		system("clear");
 
