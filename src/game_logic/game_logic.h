@@ -4,50 +4,56 @@
 #include <time.h>
 #include <ctype.h>
 
-#include "../../libs/trie.h"
+#include "../../libs/jRead.h"
+
+#include "../../libs/file_contents_to_string.h"
 
 
 // ============================================================================================= //
 
 
-int check_trie_bin(char *word) {
-	//> Check if the entered word is in the trie_bin							// TO DO
-	//> return 1 if it is
-	//> return 0 if it isn't
+int check_trie(char *word) {
 
-	/*
-	FILE *trie_bin = fopen("../bin/trie.bin", "wb");
+	FILE *trie_json = fopen("../json/trie.json", "r");
+	char *json_string = copyFileContentsToString(&trie_json);
+	fclose(trie_json);
 
-	struct node_t temp;
-	//fread();
+	int element;	// stores the value of isEndOfWord
+    
+    char *ending = "isEndOfWord'";
+    int length = strlen(word);
+    char *bigger_word = (char *)malloc(5 * sizeof(char));	// 4 + 1 byte for '\0'
+	//int new_word_len = 5;
+    
+	// Create the query string using the entered word
+    int j = 0;
+    for(int i = 0; i <= 4 * length; i+= 4, j++) {
 
-	fclose(trie_bin);
-	*/
+        bigger_word[i] = '{';
+        bigger_word[i+1] = '\'';	// char ' (single quote)
+        bigger_word[i+2] = word[j];
+        bigger_word[i+3] = '\'';	//char ' (single quote)
+		bigger_word[i+4] = '\0';
 
-	return 1;
+        char *new_word = realloc(bigger_word, (strlen(bigger_word) + 5) * sizeof(char));
+		bigger_word = new_word;
+    }
+    
+    char *final_word = realloc(bigger_word, (strlen(bigger_word) + strlen(ending) + 1) * sizeof(char)); 
+    strcat(final_word, ending);
+
+	element = jRead_int(json_string, final_word, NULL);
+
+	free(json_string);
+	free(final_word);
+
+	return element;
 }
 
 
-int check_trie(char *word) {
-    // TEMPORARY
-    // Check if the word is in the trie structure (not the binary file)
-
-    int level;
-    int length = strlen(word);
-    int index;
-    struct node_t *pCrawl = &dict_trie_root;
-
-    for (level = 0; level < length; level++)
-    {
-        index = (int)word[level] - (int)'a';
-
-        if (!pCrawl->children[index])
-            return 0;
-
-        pCrawl = pCrawl->children[index];
-    }
-
-    return (pCrawl != NULL && pCrawl->isEndOfWord);
+// int check_trie_temp(char *word) {
+	// TEMPORARY
+	// Check if the word is in the trie structure (not the json file)
 
 /*
     struct node_t *temp = &dict_trie_root;
@@ -65,26 +71,33 @@ int check_trie(char *word) {
     return (temp != NULL && temp->isEndOfWord);
     */
 
-}
+// }
 
 
-extern int enter_and_check(char rand_letters[], int letters, int* points){
+// --------------------------------------------------------------------------------------------- //
+
+
+int enter_and_check(char rand_letters[], int letters, int* points) {
 
 	char word[letters];
-	printf("\nEnter word (or enter 9 to skip level):  ");
+	printf("\nEnter word (Enter 9 to skip round):  ");
 	scanf("%s", word);
 	
-	for(int n =0; word[n] != '\0'; n++){
-		word[n] = tolower(word[n]);
+	for(int i = 0; i < strlen(word); i++){
+		word[i] = tolower(word[i]);
 	}
 	
-	char quit_word[] = "9";
-
-	// If we enter 9 => end round	
-	if(strcmp(word, quit_word) == 0){
-		printf(">Skipped\n");
+	// If we enter 9 => end round
+	if(strcmp(word, "9") == 0){
+		printf("> Skipped\n");
 		return -1;
 	}
+
+	// Copy the random letters to a temporary array so the original one won't change 
+	char temp[letters + 1];
+	strcpy(temp, rand_letters);
+
+
 
 	// Check if the word is composed of the available letters
 	int count = 0;
@@ -92,74 +105,92 @@ extern int enter_and_check(char rand_letters[], int letters, int* points){
 
 		int flag = 0;
 	
-		for(int j = 0; rand_letters[j] != '\0'; j++){
-			if(rand_letters[j] == word[i]){
+		for(int j = 0; temp[j] != '\0'; j++){
+			if(word[i] == temp[j]){
 				count++;
+				temp[j] = '-';	// set the checked letter to '-' so double letters won't cause problems
 				flag = 1;
-				rand_letters[j] = '-';
 				break;
 			}
 		}
 		
 		if(flag == 0){
 			count = 0;
+			printf("Try again(or skip) \n");	
 			return 0;
 		}
 	}
+
 
 	// Check if the entered word is in the dict_trie
 	if(check_trie(word) == 0) {
 		// If it isn't => round points are 0
 		count = 0;
-		printf("Try again(or skip) \n");
+		printf("This word is not in the dictionary!\n");
+		printf("Try again(or skip)\n");
 		return 0;
 	}
 
+
 	*points += count;
-	printf("Total points: %d\n", *points);
+	printf("\n\nTotal points: %d\n", *points);
 
 	return 1;
 }
 
 
+// --------------------------------------------------------------------------------------------- //
 
-//  Funkciq za generirane na bykwi za edin round i printiraneto im
 
-extern void letter_generation(int letters, int* points){
-    int random_letter;
+//  Function that generates random letters for one round and prints them
+void letter_generation(int letters, int *points) {
+    char random_letter;
     char array[letters + 1];
     char vowels[] = {'a','e','i','o','u','y'};
 	
-    srand(time(0)); // generira mi random chislo, ot koeto zavisqt random chislata
+    srand(time(0));	// set the seed for the random number generation
     
     random_letter = vowels[rand() % 6];
-    array[0] = random_letter;
+    array[0] = random_letter;	// the first letter is a random vowel
 	printf("\n %c ", array[0]);
 	
-    for(int i=0; i < letters - 1; i++){
-        // izpolzvam formula za generiraneto na slychaina bykwa -> (rand() % (upper - lower + 1)) + lower;
+    for(int i = 0; i < letters - 1; i++){
+        // formula for generating a random letter -> (rand() % (upper - lower + 1)) + lower;
         random_letter = (rand() % (122 - 97 + 1)) + 97; 
         array[i+1] = random_letter;
-        printf("| %c ", array[i+1]);
+        printf(" %c ", array[i+1]);
     }
+	printf("\n");
+    
 	array[letters + 1] = '\0';
 	
 	int flag;
 	do{
-
+	
 		flag = enter_and_check(array, letters, points);
 		
 	}while(flag == 0);
 }
 
 
+// --------------------------------------------------------------------------------------------- //
 
-extern void startGame(int letters, int rounds){
-	int points = 0;	
+
+void startGame(int letters, int rounds) {
+	int points = 0;
+		
 	for(int i = 0; i < rounds; i++){
+		printf("\n\n-- Round %d --\n", i+1);
         letter_generation(letters, &points);
 	}
-
-	system("clear");	
-	printf("Your score is:  %d", points);
+	printf(
+		"\n\n\n"
+		"#-----------------------#"
+		"\n"
+		"Game Over! Total points: %d\n", points
+		);
+	printf("Press ENTER to exit...");
+	// getchar is called twice because the first enter is taken from the last word submition
+	getchar();
+	getchar();
 }

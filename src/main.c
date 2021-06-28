@@ -5,12 +5,14 @@
 #include <menu.h>
 
 #include "../libs/trie.h"
+#include "../libs/file_contents_to_string.h"
 
 #include "./game_logic/game_logic.h"
 #include "./game_settings/game_settings.h"
 
-#include "./dictionary_handling/dict_to_trie.h"
 #include "./dictionary_handling/add_word_to_dict.h"
+#include "./dictionary_handling/dict_to_trie.h"
+#include "./dictionary_handling/trie_to_json.h"
 
 #include "./ui/exit_element.h"
 #include "./ui/message_box.h"
@@ -20,22 +22,15 @@
 /* Structures, Global variables, Function declarations */
 
 
-void startingMenu();								// Starts the entire application
-//void item_func(int curr_item_index);						// Executes the function associated with the passed item name
-
+void startingMenu();	// Starts a game of scrabble
+void read_settings();
 
 // ============================================================================================= //
 
 
 int main() {
-    
-   //int letters = 10;
-   //int rounds = 10;
-    
-   //letters_from_file(&letters);
-   //rounds_from_file(&rounds);
-    
-   startingMenu();	// Start the application
+
+   startingMenu();
 
    return 0;
 }
@@ -44,11 +39,28 @@ int main() {
 // ============================================================================================= //
 /* Function definitoins */
 
+void read_settings(int* letters, int* rounds){
+	
+	FILE *fp = fopen("../config/settings.json", "r");
+	char* json_string = copyFileContentsToString(&fp);
+	fclose(fp);
+	
+	*letters = jRead_int(json_string, "{'letters'", NULL);
+	*rounds = jRead_int(json_string, "{'rounds'", NULL);
+	
+	free(json_string);
+}
+
+
+// --------------------------------------------------------------------------------------------- //
+
 
 void startingMenu() {
 
 	int letters = 10; // default
 	int rounds = 10; // default
+
+	struct node_t *trie_root;
 
 	// Start ncurses
 
@@ -86,6 +98,11 @@ void startingMenu() {
 	int key;
 	int curr_item_index;
 
+	//int to_free = 0;	// flag
+
+
+	read_settings(&letters, &rounds);
+	system("clear");
 	
 	// --------------------------------------------------------------------------------------------- //
 	// Main menu
