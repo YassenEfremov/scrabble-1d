@@ -1,10 +1,10 @@
 # Macros
 
-# TO SEE ALL WARNINGS RUN > make -B
+# TO SEE ALL WARNINGS RUN -> make -B
 
-# Compiler and passed flags
+# Compiler and flags
 CC = gcc
-CFLAGS = -Wall -pedantic -std=c11 -I.
+CFLAGS = -Wall -pedantic -std=c11 -I. -lncurses -lmenu -lform
 
 # Header and object files
 DEPS = ../libs/trie.h ./game_logic/game_logic.h ./game_settings/game_settings.h ./dictionary_handling/dict_to_trie.h ./dictionary_handling/add_word_to_dict.h

@@ -41,7 +41,7 @@ int main() {
 
 void read_settings(int* letters, int* rounds){
 	
-	FILE *fp = fopen("../config/settings.json", "r");
+	FILE *fp = fopen("../config/game_settings.json", "r");
 	char* json_string = copyFileContentsToString(&fp);
 	fclose(fp);
 	
@@ -57,8 +57,8 @@ void read_settings(int* letters, int* rounds){
 
 void startingMenu() {
 
-	int letters = 10; // default
-	int rounds = 10; // default
+	int letters;
+	int rounds;
 
 	struct node_t *trie_root;
 
@@ -74,11 +74,12 @@ void startingMenu() {
 	init_pair(99, COLOR_MAGENTA, COLOR_GREEN);	// For debugging
 
 	// Other settings
-	raw();
+	cbreak();//raw();
 	noecho();
 	keypad(stdscr, TRUE);
 	curs_set(0);
 
+	read_settings(&letters, &rounds);
 
 
 	// Predefined data used by ncurses
@@ -98,12 +99,8 @@ void startingMenu() {
 	int key;
 	int curr_item_index;
 
-	//int to_free = 0;	// flag
 
 
-	read_settings(&letters, &rounds);
-	system("clear");
-	
 	// --------------------------------------------------------------------------------------------- //
 	// Main menu
 
@@ -187,7 +184,8 @@ void startingMenu() {
 					case 1:
 						// Open game settings
 						unpost_menu(main_menu);		// hide the main menu
-						gameSettings();
+						read_settings(&letters, &rounds);
+						gameSettings(&letters, &rounds);
 						post_menu(main_menu);		// unhide the main menu
 						break;
 
@@ -200,6 +198,7 @@ void startingMenu() {
 					case 3:
 						// Exit the whole app
 						exitMenu(&main_menu, &items, num_of_items);
+						curs_set(1);
 						endwin();
 						exit(EXIT_SUCCESS);
 				}

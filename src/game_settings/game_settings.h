@@ -6,83 +6,19 @@
 #include <menu.h>
 #include <form.h>
 
+#include "../../libs/jRead.h"
+#include "../../libs/jWrite.h"
+
 #include "../ui/exit_element.h"
 #include "../ui/message_box.h"
 
 
 // ============================================================================================= //
 
-#include "../../libs/jRead.h"
-#include "../../libs/jWrite.h"
-
-
-// THESE WILL BE REPLACED WITH JSON! (possibly)
-// v v v v v v v v v v v v v v v v v v v v v v
-
-/*
-void rounds_from_file(int* rounds){ //  function to read the amount of rounds from file
-
-    FILE* fp;
-    fp = fopen("./game_settings/num_of_let_and_rounds.txt", "r");
-
-    char buffer[25];
-    char ch;
-    int i =0;
-
-    while(1){ // READ EVERYTHING FROM FILE AND SAVE IT IN BUFFER
-        ch = fgetc(fp);
-        if(feof(fp)){
-            break;
-        }
-        buffer[i] = ch;
-        i++;
-    }
-    buffer[i] = '\0';
-
-    char *pr = ",";
-    char *token;
-    token = strtok(buffer, pr);
-
-    char* amount_of_rounds;
-    int flag = 0;
-
-    while(token != NULL){
-        flag++;
-        token = strtok(NULL, pr);
-        if(flag == 1){
-            amount_of_rounds = token;
-        }
-    }
-    
-    *rounds = atoi(amount_of_rounds);
-
-    fclose(fp);
-}
-*/
-/*
-void letters_from_file(int* letters){ // function to read the amount of letters from file
-
-    char buffer[25];
-    char ch;
-    int i = 0;
-    
-    FILE* fp;
-    fp = fopen("./game_settings/num_of_let_and_rounds.txt", "r");
-
-    while((ch = fgetc(fp)) != ','){
-        buffer[i] = ch;
-        i++;
-    }
-
-    *letters = atoi(buffer);
-    
-    fclose(fp);
-}
-*/
 
 int change_letters(int new_letters, int rounds){
 		
-	FILE* settings_json = fopen("../config/settings.json", "w");
+	FILE* settings_json = fopen("../config/game_settings.json", "w");
 	
 	if(!settings_json){
 		printf("\nError: settings.json missing! ");
@@ -107,9 +43,12 @@ int change_letters(int new_letters, int rounds){
 }
 
 
+// --------------------------------------------------------------------------------------------- //
+
+
 int change_rounds(int new_rounds, int letters){
 		
-	FILE* settings_json = fopen("../config/settings.json", "w");
+	FILE* settings_json = fopen("../config/game_settings.json", "w");
 	
 	if(!settings_json){
 		printf("\nError: settings.json missing! ");
@@ -137,10 +76,12 @@ int change_rounds(int new_rounds, int letters){
 // ============================================================================================= //
 
 
-extern void gameSettings() {
-    
-    cbreak();
+void gameSettings(int *letters, int *rounds) {
     refresh();
+
+    // Used for writing to the field buffer
+    char str_letters[3];
+    char str_rounds[3];
 
     // Predefined data used by ncurses
 
@@ -157,10 +98,13 @@ extern void gameSettings() {
 
 	ITEM *curr_item;
 	int key;
+    //char str_value[3];
+    char *str_keys;
 	int curr_item_index;
+    int is_valid;
 
 
-    // --------------------------------------------------------------------------------------------- //
+    // ----------------------------------------------------------------------------------------- //
     // Settings menu
 
     // Options
@@ -182,7 +126,7 @@ extern void gameSettings() {
 	set_menu_fore(settings_menu, A_BOLD);
 	
 
-    // --------------------------------------------------------------------------------------------- //
+    // ----------------------------------------------------------------------------------------- //
     // Settings form
 
     // Fields
@@ -193,31 +137,41 @@ extern void gameSettings() {
 	settings_fields[num_of_fields] = NULL;
 
     // Field settings
-    set_field_type(settings_fields[0], TYPE_NUMERIC, 0, 3, 26);          // not sure about these
-    set_field_type(settings_fields[1], TYPE_NUMERIC, 0, 1, 99);          // -.-
+    set_field_type(settings_fields[0], TYPE_INTEGER, 0, 2, 26);          // not sure about these
+    set_field_type(settings_fields[1], TYPE_INTEGER, 0, 1, 99);
 
-    for(int i = 0; i < num_of_fields; i++) {
-	    set_field_back(settings_fields[i], A_UNDERLINE);
-	    field_opts_off(settings_fields[i], O_AUTOSKIP);
-    }
+    field_opts_off(settings_fields[0], O_AUTOSKIP);
+    field_opts_off(settings_fields[1], O_AUTOSKIP);
 
     // Form
 	FORM *settings_form = new_form(settings_fields);
     set_form_sub(settings_form, settings_menu_win);
+    
 
 
     // First post the form, then the manu
     post_form(settings_form);
     post_menu(settings_menu);
 
-	wrefresh(settings_menu_win);
+    wrefresh(settings_menu_win);
 
 
-    // --------------------------------------------------------------------------------------------- //
+    // Set the settings values (read form file)
+    sprintf(str_letters, "%d", *letters);
+    sprintf(str_rounds, "%d", *rounds);
+
+    set_field_buffer(settings_fields[0], 0, str_letters);
+    set_field_buffer(settings_fields[1], 0, str_rounds);
+
+    wrefresh(settings_menu_win);
+
+
+	
+    // ----------------------------------------------------------------------------------------- //
 	// Navigation
 
 	do {
-		key = getch();
+        key = wgetch(settings_menu_win);
 		werase(msg_win);
 		curr_item = current_item(settings_menu);
 
@@ -232,64 +186,127 @@ extern void gameSettings() {
 				menu_driver(settings_menu, REQ_UP_ITEM);
 				break;
 
-			case 10:
+			case 10: 
                 // Enter key
+
 				curr_item_index = item_index(curr_item);
+                
                 set_menu_mark(settings_menu, "  ");
 
 				switch(curr_item_index) {
 					case 0:
-                        // Enter letters field
-                        curs_set(1);
-                        form_driver(settings_form, REQ_FIRST_FIELD);    // The first field is the first one
-                        form_driver(settings_form, REQ_END_FIELD);
+                        // --------------------------------------------------------------------- //
+                        // Letters field
 
+                        str_keys = field_buffer(settings_fields[0], 0);
+                        set_field_back(settings_fields[0], A_UNDERLINE);
+                        
+                        // Input and validation
                         do {
-                            key = wgetch(settings_menu_win);
-
-                            if(key == KEY_BACKSPACE) {
-                                form_driver(settings_form, REQ_DEL_CHAR);
-                                form_driver(settings_form, REQ_PREV_CHAR);
+                            // Move to the end of word in field
+                            form_driver(settings_form, REQ_FIRST_FIELD);
+                            if(atoi(str_keys) < 10) {
+                                form_driver(settings_form, REQ_BEG_LINE);
                             }else {
-                                form_driver(settings_form, key);
+                                form_driver(settings_form, REQ_END_LINE);
                             }
-                        }while(key != 10);
 
-                        curs_set(0);
+                            // Read input from the user
+                            do {
+                                key = wgetch(settings_menu_win);
+
+                                if(key == 'q') {    // exit the field
+                                    set_field_buffer(settings_fields[0], 0, str_keys);
+                                    break;
+                                }else if(key == KEY_BACKSPACE) {    // delete from the field
+                                    form_driver(settings_form, REQ_DEL_CHAR);
+                                    form_driver(settings_form, REQ_PREV_CHAR);
+                                }else {     // write to the field
+                                    form_driver(settings_form, key);
+                                }
+                            }while(key != 10);
+
+                            // Check if it's valid
+                            is_valid = form_driver(settings_form, REQ_VALIDATION);
+                            if(is_valid != E_OK) {
+                                message_log("Invalid! Letters are from 2 to 26.");
+                                wrefresh(msg_win);
+                            }else {
+                                str_keys = field_buffer(settings_fields[0], 0);
+                            }
+
+                        }while(is_valid != E_OK);
+
+                        werase(msg_win);
+                        
+                        // Move the entered data to the field buffer
+                        str_keys = field_buffer(settings_fields[0], 0);
+                        change_letters(atoi(str_keys), *rounds);     // Write it to the settings
+
+                        set_field_back(settings_fields[0], A_NORMAL);
 						break;
 
 					case 1:
-						// Enter rounds field
-                        curs_set(1);
-                        form_driver(settings_form, REQ_LAST_FIELD);     // The last field is the second one
-                        form_driver(settings_form, REQ_END_FIELD);
+                        // --------------------------------------------------------------------- //
+						// Rounds field
 
+                        str_keys = field_buffer(settings_fields[1], 0);
+                        set_field_back(settings_fields[1], A_UNDERLINE); 
+
+                        // Input validation
                         do {
-                            key = wgetch(settings_menu_win);
-                            //form_driver(settings_form, REQ_LAST_FIELD);
-
-                            if(key == KEY_BACKSPACE) {
-                                form_driver(settings_form, REQ_DEL_CHAR);
-                                form_driver(settings_form, REQ_PREV_CHAR);
+                            // Move to the end of word in field
+                            form_driver(settings_form, REQ_LAST_FIELD);
+                            if(atoi(str_keys) < 10) {
+                                form_driver(settings_form, REQ_BEG_LINE);
                             }else {
-                                form_driver(settings_form, key);
+                                form_driver(settings_form, REQ_END_LINE);
                             }
-                        }while(key != 10);
 
-                        curs_set(0);
+                            // Read input from the user
+                            do {
+                                key = wgetch(settings_menu_win);
+
+                                if(key == 'q') {    // exit the field
+                                    set_field_buffer(settings_fields[1], 0, str_keys);
+                                    break;
+                                }else if(key == KEY_BACKSPACE) {    // delete from the field
+                                    form_driver(settings_form, REQ_DEL_CHAR);
+                                    form_driver(settings_form, REQ_PREV_CHAR);
+                                }else {     // write to the field
+                                    form_driver(settings_form, key);
+                                }
+                            }while(key != 10);
+
+                            // Check if it's valid
+                            is_valid = form_driver(settings_form, REQ_VALIDATION);
+                            if(is_valid != E_OK) {
+                                message_log("Invalid! Rounds are from 1 to 99.");
+                                wrefresh(msg_win);
+                            }else {
+                                str_keys = field_buffer(settings_fields[1], 0);
+                            }
+
+                        }while(is_valid != E_OK);                
+                        
+                        wrefresh(msg_win);
+
+                        str_keys = field_buffer(settings_fields[1], 0);
+                        change_rounds(atoi(str_keys), *letters);     // Write it to the settings
+
+                        set_field_back(settings_fields[1], A_NORMAL);
 						break;
 
 					case 2:
                         // Exit settings menu
-                        //> write the entered settings to the json file             // TO DO
                         exitForm(&settings_form, &settings_fields, num_of_fields);
                         exitMenu(&settings_menu, &items, num_of_items);
                         delwin(settings_menu_win);
-                        raw();
                         return;
 				}
 				break;
 		}
+
         set_menu_mark(settings_menu, "> ");
 		wrefresh(msg_win);
 
