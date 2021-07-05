@@ -2,76 +2,16 @@
 #include <stdlib.h>
 #include <string.h>
 #include <ctype.h>
+#include "game_settings.h"
 
-#include "../../libs/jRead.h"
-#include "../../libs/jWrite.h"
+#include "jRead.h"
+#include "jWrite.h"
 
 
-// THESE WILL BE REPLACED WITH JSON! (possibly)
-// v v v v v v v v v v v v v v v v v v v v v v
+/* ============================================================================================= */
 
-/*
-void rounds_from_file(int* rounds){ //  function to read the amount of rounds from file
 
-    FILE* fp;
-    fp = fopen("./game_settings/num_of_let_and_rounds.txt", "r");
-
-    char buffer[25];
-    char ch;
-    int i =0;
-
-    while(1){ // READ EVERYTHING FROM FILE AND SAVE IT IN BUFFER
-        ch = fgetc(fp);
-        if(feof(fp)){
-            break;
-        }
-        buffer[i] = ch;
-        i++;
-    }
-    buffer[i] = '\0';
-
-    char *pr = ",";
-    char *token;
-    token = strtok(buffer, pr);
-
-    char* amount_of_rounds;
-    int flag = 0;
-
-    while(token != NULL){
-        flag++;
-        token = strtok(NULL, pr);
-        if(flag == 1){
-            amount_of_rounds = token;
-        }
-    }
-    
-    *rounds = atoi(amount_of_rounds);
-
-    fclose(fp);
-}
-*/
-/*
-void letters_from_file(int* letters){ // function to read the amount of letters from file
-
-    char buffer[25];
-    char ch;
-    int i = 0;
-    
-    FILE* fp;
-    fp = fopen("./game_settings/num_of_let_and_rounds.txt", "r");
-
-    while((ch = fgetc(fp)) != ','){
-        buffer[i] = ch;
-        i++;
-    }
-
-    *letters = atoi(buffer);
-    
-    fclose(fp);
-}
-*/
-
-int change_letters(int new_letters, int rounds){
+int change_letters(int new_letters, int rounds) {
 		
 	FILE* settings_json = fopen("../config/settings.json", "w");
 	
@@ -98,7 +38,10 @@ int change_letters(int new_letters, int rounds){
 }
 
 
-int change_rounds(int new_rounds, int letters){
+/* --------------------------------------------------------------------------------------------- */
+
+
+int change_rounds(int new_rounds, int letters) {
 		
 	FILE* settings_json = fopen("../config/settings.json", "w");
 	
@@ -125,7 +68,7 @@ int change_rounds(int new_rounds, int letters){
 }
 
 
-// --------------------------------------------------------------------------------------------- // 
+/* ============================================================================================= */
 
 
 void gameSettings(int *letters, int *rounds) {
@@ -210,7 +153,4 @@ void gameSettings(int *letters, int *rounds) {
             }
         
     }while(1);
-    
 }
-
-// --------------------------------------------------------------------------------------------- //

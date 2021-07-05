@@ -1,12 +1,15 @@
+/* Definitions for functions declared in game_logic.h */
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <time.h>
 #include <ctype.h>
+#include "game_logic.h"
 
-#include "../../libs/jRead.h"
+#include "jRead.h"
 
-#include "../../libs/file_contents_to_string.h"
+#include "dict_handling.h"
 
 
 // ============================================================================================= //
@@ -15,7 +18,7 @@
 int check_trie(char *word) {
 
 	FILE *trie_json = fopen("../json/trie.json", "r");
-	char *json_string = copyFileContentsToString(&trie_json);
+	char *json_string = strfcpy(trie_json);
 	fclose(trie_json);
 
 	int element;	// stores the value of isEndOfWord
@@ -50,12 +53,11 @@ int check_trie(char *word) {
 	return element;
 }
 
-
-// int check_trie_temp(char *word) {
-	// TEMPORARY
+/*
+int check_trie_temp(char *word) {
+	// DON'T DELETE THIS CODE, it might be needed in the future
 	// Check if the word is in the trie structure (not the json file)
 
-/*
     struct node_t *temp = &dict_trie_root;
     int letter_index;
 
@@ -69,9 +71,8 @@ int check_trie(char *word) {
 
     printf("(%d)", (temp != NULL && temp->isEndOfWord));
     return (temp != NULL && temp->isEndOfWord);
-    */
-
-// }
+}
+*/
 
 
 // --------------------------------------------------------------------------------------------- //
@@ -177,12 +178,15 @@ void letter_generation(int letters, int *points) {
 
 
 void startGame(int letters, int rounds) {
+
 	int points = 0;
 		
 	for(int i = 0; i < rounds; i++){
 		printf("\n\n-- Round %d --\n", i+1);
         letter_generation(letters, &points);
 	}
+	
+	// At the end of the game
 	printf(
 		"\n\n\n"
 		"#-----------------------#"

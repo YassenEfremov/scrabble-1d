@@ -1,44 +1,25 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <errno.h>
 
-#include "../libs/trie.h"
-#include "../libs/file_contents_to_string.h"
+#include "jRead.h"
+#include "trie.h"
 
-#include "./game_logic/game_logic.h"
-#include "./game_settings/game_settings.h"
-
-#include "./dictionary_handling/add_word_to_dict.h"
-#include "./dictionary_handling/dict_to_trie.h"
-#include "./dictionary_handling/trie_to_json.h"
+#include "dict_handling.h"
+#include "game_logic.h"
+#include "game_settings.h"
 
 
-// ============================================================================================= //
-/* Structures, Global variables, Function declarations */
+/* ============================================================================================= */
+/* Private functions */
 
 
-void startingMenu();	// Starts a game of scrabble
-void read_settings();
-
-// ============================================================================================= //
-
-
-int main() {
-
-   startingMenu();
-
-   return 0;
-}
-
-
-// ============================================================================================= //
-/* Function definitoins */
-
-void read_settings(int* letters, int* rounds){
+static void get_settings(int* letters, int* rounds) {
 	
-	FILE *fp = fopen("../config/settings.json", "r");
-	char* json_string = copyFileContentsToString(&fp);
-	fclose(fp);
+	FILE *settings_json = fopen("../config/settings.json", "r");
+	char* json_string = strfcpy(settings_json);
+	fclose(settings_json);
 	
 	*letters = jRead_int(json_string, "{'letters'", NULL);
 	*rounds = jRead_int(json_string, "{'rounds'", NULL);
@@ -47,10 +28,11 @@ void read_settings(int* letters, int* rounds){
 }
 
 
-// --------------------------------------------------------------------------------------------- //
+/* ============================================================================================= */
+/* Public functions */
 
 
-void startingMenu() {
+int main(int argc, char *argv[]) {
 
 	char menu[1];	// the size of this array DOESN'T cause problems because we directly exit the program
 	int value;
@@ -62,9 +44,13 @@ void startingMenu() {
 	struct node_t *trie_root;
 	
 
-	read_settings(&letters, &rounds);
+	get_settings(&letters, &rounds);
 	system("clear");
 	
+
+
+	/* Main program loop */
+
 	do {
 	
 		printf(
@@ -90,6 +76,10 @@ void startingMenu() {
 
 	    switch(value){
 
+			/* -- Main menu options -- */
+
+
+			/* New Game */
 	    	case 1:
 				system("clear");
 				//> Check if the dictionary has changed while the game hasn't been runnging		// TO DO
@@ -98,13 +88,15 @@ void startingMenu() {
 				system("clear");
 				break;
 			
+			/* Settings */
 	    	case 2:
 				system("clear");
 				gameSettings(&letters, &rounds);		// open game settings
-				read_settings(&letters, &rounds);
+				get_settings(&letters, &rounds);
 				system("clear");
 				break;
 			
+			/* Add word */
 	    	case 3:
 				system("clear");
 				addWordToDict();				// add word to the dictionary
@@ -117,13 +109,14 @@ void startingMenu() {
 				//to_free = 1;
 				break;
 			
+			/* Exit */
 	    	case 4:
                 system("clear"); 
-                exit(EXIT_SUCCESS);	// exit the game
+                return 0;	// exit the game
 	    		break;
 	    		
+			/* Invalid option */
 	    	default:
-                // invalid option
                 system("clear");
 				//if(to_free) free(trie_root);	// if we have done anything with the tire => free its root
                 printf("Invalid, try again!\n");
@@ -131,4 +124,6 @@ void startingMenu() {
 	    }
 	
 	}while(1);
+
+	return 0;
 }

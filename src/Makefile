@@ -7,9 +7,23 @@ CC = gcc
 CFLAGS = -Wall -pedantic -std=c11 -I.
 
 # Header and object files
-DEPS = ../libs/trie.h ./game_logic/game_logic.h ./game_settings/game_settings.h ./dictionary_handling/dict_to_trie.h ./dictionary_handling/add_word_to_dict.h
+DEPS = \
+	trie.h \
+	game_logic.h \
+	game_settings.h \
+	dict_handling.h \
+	jWrite.h \
+	jRead.h
 
-_OBJ = main.o jWrite.o jRead.o	# raw file names
+_OBJ = \
+	main.o \
+	game_logic.o \
+	game_settings.o \
+	dict_handling.o \
+	trie.o \
+	jWrite.o \
+	jRead.o
+
 OBJ = $(patsubst %,obj/%,$(_OBJ))	# Add the obj directory path to each .o file
 
 
@@ -22,4 +36,4 @@ obj/%.o: %.c $(DEPS)
 
 # To build the main executable you need all of the object files
 scrabble: $(OBJ)
-	$(CC) -o $@ ./obj/main.o ./obj/jWrite.o ./obj/jRead.o $(CFLAGS)
+	$(CC) -o $@ ./obj/main.o ./obj/game_logic.o ./obj/game_settings.o ./obj/dict_handling.o ./obj/trie.o ./obj/jWrite.o ./obj/jRead.o $(CFLAGS)

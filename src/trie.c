@@ -2,19 +2,10 @@
 #include <stdlib.h>
 #include <string.h>
 
-
-// ============================================================================================= //
-
-#ifndef TRIE
-#define TRIE
-
-struct node_t {
-	struct node_t *children[26];
-	int isEndOfWord;
-};
+#include "trie.h"
 
 
-// --------------------------------------------------------------------------------------------- //
+/* ============================================================================================= */
 
 
 struct node_t *trie_create_node() {
@@ -49,6 +40,10 @@ bool search(struct node_t *root, const char *key)
 }
 */
 
+
+/* --------------------------------------------------------------------------------------------- */
+
+
 void trie_insert(struct node_t *root, char *word) {
 
     int word_length = strlen(word);
@@ -70,6 +65,9 @@ void trie_insert(struct node_t *root, char *word) {
 }
 
 
+/* --------------------------------------------------------------------------------------------- */
+
+
 void trie_delete(struct node_t *root) {
 
     // Base case
@@ -83,5 +81,3 @@ void trie_delete(struct node_t *root) {
         }
     }
 }
-
-#endif
