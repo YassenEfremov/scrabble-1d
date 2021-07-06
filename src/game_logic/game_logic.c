@@ -4,12 +4,11 @@
 #include <stdlib.h>
 #include <string.h>
 #include <time.h>
-#include <ctype.h>
+#include <ctype.h>		// atoi
 #include "game_logic.h"
 
-#include "jRead.h"
-
-#include "dict_handling.h"
+#include "libs/jRead.h"
+#include "libs/dict_handling/dict_handling.h"
 
 
 // ============================================================================================= //
@@ -17,7 +16,7 @@
 
 int check_trie(char *word) {
 
-	FILE *trie_json = fopen("../json/trie.json", "r");
+	FILE *trie_json = fopen("../../json/trie.json", "r");
 	char *json_string = strfcpy(trie_json);
 	fclose(trie_json);
 

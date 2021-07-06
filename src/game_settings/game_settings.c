@@ -1,11 +1,11 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <ctype.h>
+#include <ctype.h>      // atoi
 #include "game_settings.h"
 
-#include "jRead.h"
-#include "jWrite.h"
+#include "libs/jRead.h"
+#include "libs/jWrite.h"
 
 
 /* ============================================================================================= */
@@ -13,8 +13,7 @@
 
 int change_letters(int new_letters, int rounds) {
 		
-	FILE* settings_json = fopen("../config/settings.json", "w");
-	
+	FILE* settings_json = fopen("../../config/game_settings.json", "w");
 	if(!settings_json){
 		printf("\nError: settings.json missing! ");
 		return 2;
@@ -43,7 +42,7 @@ int change_letters(int new_letters, int rounds) {
 
 int change_rounds(int new_rounds, int letters) {
 		
-	FILE* settings_json = fopen("../config/settings.json", "w");
+	FILE* settings_json = fopen("../../config/game_settings.json", "w");
 	
 	if(!settings_json){
 		printf("\nError: settings.json missing! ");
@@ -76,6 +75,7 @@ void gameSettings(int *letters, int *rounds) {
     char choice[30];    // the size of this array causes problems
     int value;
     int flag;
+    int err_code;
 
     int new_letters;
     int new_rounds;
@@ -116,8 +116,12 @@ void gameSettings(int *letters, int *rounds) {
                     }
                     
                     flag = 1;
-                    change_letters(new_letters, *rounds);
-                    
+                    err_code = change_letters(new_letters, *rounds);
+
+                    if(err_code != JWRITE_OK) {
+                        printf("Error: change_letters failed!");
+                        return;
+                    }
                     printf("Successfully updated!");
                 }while(flag != 1);
                 return;
@@ -136,8 +140,12 @@ void gameSettings(int *letters, int *rounds) {
                     }
                     
                     flag = 1;
-                    change_rounds(new_rounds, *letters);
-                    
+                    err_code = change_rounds(new_rounds, *letters);
+
+                    if(err_code != JWRITE_OK) {
+                        printf("Error: change_rounds failed!");
+                        return;
+                    }
                     printf("Successfully updated!");
                 }while(flag != 1);
                 return;

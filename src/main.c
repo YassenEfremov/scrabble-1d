@@ -3,21 +3,26 @@
 #include <string.h>
 #include <errno.h>
 
-#include "jRead.h"
-#include "trie.h"
+#include "libs/jRead.h"
+#include "libs/trie.h"
+#include "libs/dict_handling/dict_handling.h"
 
-#include "dict_handling.h"
-#include "game_logic.h"
-#include "game_settings.h"
+#include "game_logic/game_logic.h"
+#include "game_settings/game_settings.h"
 
 
 /* ============================================================================================= */
 /* Private functions */
 
 
-static void get_settings(int* letters, int* rounds) {
+static int get_settings(int* letters, int* rounds) {
 	
-	FILE *settings_json = fopen("../config/settings.json", "r");
+	FILE *settings_json = fopen("../../config/game_settings.json", "r");
+	if(!settings_json){
+		printf("\nError: game_settings.json missing! ");
+		return 2;
+	}
+
 	char* json_string = strfcpy(settings_json);
 	fclose(settings_json);
 	
@@ -42,7 +47,6 @@ int main(int argc, char *argv[]) {
     int rounds;
 
 	struct node_t *trie_root;
-	
 
 	get_settings(&letters, &rounds);
 	system("clear");
