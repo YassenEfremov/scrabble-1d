@@ -1,0 +1,8 @@
+{
+	"files.associations": {
+		"stdlib.h": "c",
+		"jread.h": "c",
+		"trie.h": "c",
+		"errno.h": "c"
+	}
+}

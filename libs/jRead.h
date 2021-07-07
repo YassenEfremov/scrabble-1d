@@ -6,8 +6,8 @@
 // uncomment this if you really want to use double quotes in query strings instead of '
 //#define JREAD_DOUBLE_QUOTE_IN_QUERY
 
-#ifndef JREAD	// JREAD include guards
-#define JREAD
+#ifndef JREAD_H	// JREAD include guards
+#define JREAD_H
 
 //
 // return dataTypes:

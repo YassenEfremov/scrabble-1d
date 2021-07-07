@@ -3,47 +3,31 @@
 #include <string.h>
 #include <ncurses.h>
 #include <menu.h>
+#include <errno.h>
 
-#include "../libs/trie.h"
-#include "../libs/file_contents_to_string.h"
+#include "libs/jRead.h"
+#include "libs/trie.h"
+#include "libs/dict_handling/dict_handling.h"
+#include "libs/ui_util/ui_util.h"
 
-#include "./game_logic/game_logic.h"
-#include "./game_settings/game_settings.h"
-
-#include "./dictionary_handling/add_word_to_dict.h"
-#include "./dictionary_handling/dict_to_trie.h"
-#include "./dictionary_handling/trie_to_json.h"
-
-#include "./ui/exit_element.h"
-#include "./ui/message_box.h"
+#include "game_logic/game_logic.h"
+#include "game_settings/game_settings.h"
 
 
-// ============================================================================================= //
-/* Structures, Global variables, Function declarations */
+/* ============================================================================================= */
+/* Private functions */
 
 
-void startingMenu();	// Starts a game of scrabble
-void read_settings();
-
-// ============================================================================================= //
-
-
-int main() {
-
-   startingMenu();
-
-   return 0;
-}
-
-
-// ============================================================================================= //
-/* Function definitoins */
-
-void read_settings(int* letters, int* rounds){
+static int get_settings(int* letters, int* rounds) {
 	
-	FILE *fp = fopen("../config/game_settings.json", "r");
-	char* json_string = copyFileContentsToString(&fp);
-	fclose(fp);
+	FILE *settings_json = fopen("../../config/game_settings.json", "r");
+	if(!settings_json){
+		printf("\nError: game_settings.json missing! ");
+		return 2;
+	}
+
+	char* json_string = strfcpy(settings_json);
+	fclose(settings_json);
 	
 	*letters = jRead_int(json_string, "{'letters'", NULL);
 	*rounds = jRead_int(json_string, "{'rounds'", NULL);
@@ -52,10 +36,11 @@ void read_settings(int* letters, int* rounds){
 }
 
 
-// --------------------------------------------------------------------------------------------- //
+/* ============================================================================================= */
+/* Public functions */
 
 
-void startingMenu() {
+int main(int argc, char *argv[]) {
 
 	int letters;
 	int rounds;
@@ -79,7 +64,7 @@ void startingMenu() {
 	keypad(stdscr, TRUE);
 	curs_set(0);
 
-	read_settings(&letters, &rounds);
+	get_settings(&letters, &rounds);
 
 
 	// Predefined data used by ncurses
@@ -101,8 +86,8 @@ void startingMenu() {
 
 
 
-	// --------------------------------------------------------------------------------------------- //
-	// Main menu
+	/* --------------------------------------------------------------------------------------------- */
+	/* Main menu */
 
 	// Title
 	char *mtitle = "SCRABBLE";
@@ -134,16 +119,17 @@ void startingMenu() {
 	set_menu_fore(main_menu, A_BOLD);
 
 
-	// --------------------------------------------------------------------------------------------- //
-	// Message window
+	/* --------------------------------------------------------------------------------------------- */
+	/* Message window */
 
 	// This window is used to display messages ingame
-	msg_win = derwin(stdscr, 1, MSG_LEN, rows/2 + 6, cols/2 - MSG_LEN/2);	// DEFINED GLOBALLY IN message_box.h
+	WINDOW *msg_win = derwin(stdscr, 1, MSG_LEN, rows/2 + 6, cols/2 - MSG_LEN/2);	// DECLARED GLOBALLY IN ui_util.h
 
 	// Navigation guide message
 	char *nav_guide_msg = "(Use arrow keys to navigate)";
 	char *soon_msg = "Coming soon!";
 	message_log(nav_guide_msg);
+
 
 
 	// Post the menu
@@ -152,8 +138,8 @@ void startingMenu() {
 	refresh();
 
 
-	// --------------------------------------------------------------------------------------------- //
-	// Navigation
+	/* --------------------------------------------------------------------------------------------- */
+	/* Navigation */
 	do {
 		key = getch();
 		werase(msg_win);
@@ -184,7 +170,7 @@ void startingMenu() {
 					case 1:
 						// Open game settings
 						unpost_menu(main_menu);		// hide the main menu
-						read_settings(&letters, &rounds);
+						get_settings(&letters, &rounds);
 						gameSettings(&letters, &rounds);
 						post_menu(main_menu);		// unhide the main menu
 						break;
@@ -207,4 +193,6 @@ void startingMenu() {
 		wrefresh(msg_win);
 
 	}while(1);
+
+	return 0;
 }

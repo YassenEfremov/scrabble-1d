@@ -79,8 +79,8 @@
 // TonyWilk, Mar 2015
 //
 // 
-#ifndef JWRITE	// JWRITE include guards
-#define JWRITE
+#ifndef JWRITE_H	// JWRITE include guards
+#define JWRITE_H
 
 
 #define JW_GLOBAL_CONTROL_STRUCT	// <--- comment this out to use applic-supplied jWriteControl

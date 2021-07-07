@@ -111,7 +111,7 @@
 //
 #include <stdio.h>
 
-#include "../libs/jRead.h"
+#include "jRead.h"
 
 // By default we use single quote in query strings so it's a lot easier
 // to type in code i.e.  "{'key'" instead of "{\"key\""

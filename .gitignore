@@ -1,5 +1,20 @@
-# Executable
-scrabble
-
-# Object files
+# In all directories
 *.o
+*.a
+*.lo
+*.la
+*.cache
+*~
+Makefile
+Makefile.in
+
+# In main directory
+!build
+build/*
+!build/README.md
+build-aux/
+m4/
+aclocal.m4
+autoscan.log
+config.h.in
+configure
