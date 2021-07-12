@@ -17,7 +17,5 @@ int change_letters(int new_letters, int rounds);
 int change_rounds(int new_rounds, int letters);
 
 
-/*
- * Scrabble: Open the game settings.
- */
+/* Scrabble: Open the game settings. */
 void gameSettings(int *letters, int *rounds);

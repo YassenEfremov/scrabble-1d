@@ -26,7 +26,5 @@ int enter_and_check(char rand_letters[], int letters, int* points);
 void letter_generation(int letters, int *points);
 
 
-/*
- * Scrabble: Start a game.
- */
+/* Scrabble: Start a game. */
 void startGame(int letters, int rounds);

@@ -15,11 +15,12 @@
 
 
 /* ============================================================================================= */
+/* Private functions */
 
 
 int change_letters(int new_letters, int rounds){
 		
-	FILE* settings_json = fopen("../../config/game_settings.json", "w");
+	FILE* settings_json = fopen("../config/game_settings.json", "w");
 	
 	if(!settings_json){
 		message_log("Error: settings.json missing!");
@@ -49,7 +50,7 @@ int change_letters(int new_letters, int rounds){
 
 int change_rounds(int new_rounds, int letters){
 		
-	FILE* settings_json = fopen("../../config/game_settings.json", "w");
+	FILE* settings_json = fopen("../config/game_settings.json", "w");
 	
 	if(!settings_json){
 		message_log("Error: settings.json missing!");
@@ -74,10 +75,42 @@ int change_rounds(int new_rounds, int letters){
 }
 
 
+/* --------------------------------------------------------------------------------------------- */
+
+
+/*
+ * Refresh the settings menu screen. (use on resize of terminal)
+ */
+void refresh_settings_menu(int rows, int cols, WINDOW *settings_menu_win, int num_of_items) {
+
+	endwin();
+	refresh();
+	clear();
+	getmaxyx(stdscr, rows, cols);	// get the new dimentions of the main screen
+
+	// If the size of the terminal is smaller than (39, 5) everything glitches out!				// TO DO
+	mvwin(settings_menu_win, rows/2 - num_of_items/2, cols/2 - 6);
+    attron(A_UNDERLINE);
+    attron(A_BOLD);
+    mvprintw(settings_menu_win->_begy - 2, cols/2 - 4, "Settings");
+    attroff(A_BOLD);
+    attroff(A_UNDERLINE);
+
+	mvwin(title_win, settings_menu_win->_begy - 4 - 4, cols/2 - 19);
+	mvwin(msg_win, settings_menu_win->_begy + num_of_items + 3, cols/2 - MSG_LEN/2);
+
+	// Refresh the necessay elements
+	refresh();
+	wrefresh(title_win);
+}
+
+
 /* ============================================================================================= */
+/* Public functions */
 
 
 void gameSettings(int *letters, int *rounds) {
+
     refresh();
 
     // Used for writing to the field buffer
@@ -116,13 +149,13 @@ void gameSettings(int *letters, int *rounds) {
     items[num_of_items] = NULL;
 
     // Menu
-	WINDOW *settings_menu_win = derwin(stdscr, num_of_items, 14, rows/3 + 3, cols/2 - 7);
-    keypad(settings_menu_win, TRUE);
-    //wbkgd(settings_menu_win, COLOR_PAIR(99));
+	WINDOW *settings_menu_win = newwin(num_of_items, 14, rows/2 - num_of_items/2, cols/2 - 7);
 	MENU *settings_menu = new_menu((ITEM **)items);
 	
+	set_menu_win(settings_menu, settings_menu_win);
+    set_menu_sub(settings_menu, settings_menu_win);
+
     // Menu settings
-	set_menu_sub(settings_menu, settings_menu_win);
 	set_menu_mark(settings_menu, "> ");
 	set_menu_fore(settings_menu, A_BOLD);
 	
@@ -138,7 +171,7 @@ void gameSettings(int *letters, int *rounds) {
 	settings_fields[num_of_fields] = NULL;
 
     // Field settings
-    set_field_type(settings_fields[0], TYPE_INTEGER, 0, 2, 26);          // not sure about these
+    set_field_type(settings_fields[0], TYPE_INTEGER, 0, 2, 26);
     set_field_type(settings_fields[1], TYPE_INTEGER, 0, 1, 99);
 
     field_opts_off(settings_fields[0], O_AUTOSKIP);
@@ -146,16 +179,25 @@ void gameSettings(int *letters, int *rounds) {
 
     // Form
 	FORM *settings_form = new_form(settings_fields);
+
+    // Form settings
+    set_form_win(settings_form, settings_menu_win);
     set_form_sub(settings_form, settings_menu_win);
     
 
+    /* ----------------------------------------------------------------------------------------- */
+
+
+    // Print menu title
+    attron(A_UNDERLINE);
+    attron(A_BOLD);
+    mvprintw(settings_menu_win->_begy - 2, cols/2 - 4, "Settings");
+    attroff(A_BOLD);
+    attroff(A_UNDERLINE);
 
     // First post the form, then the manu
     post_form(settings_form);
     post_menu(settings_menu);
-
-    wrefresh(settings_menu_win);
-
 
     // Set the settings values (read form file)
     sprintf(str_letters, "%d", *letters);
@@ -164,35 +206,38 @@ void gameSettings(int *letters, int *rounds) {
     set_field_buffer(settings_fields[0], 0, str_letters);
     set_field_buffer(settings_fields[1], 0, str_rounds);
 
+    // Refresh everything
     wrefresh(settings_menu_win);
-
+    wrefresh(msg_win);
 
 	
     /* ----------------------------------------------------------------------------------------- */
 	/* Navigation */
 
 	do {
-        key = wgetch(settings_menu_win);
-		werase(msg_win);
+        key = getch();
 		curr_item = current_item(settings_menu);
 
 		switch(key) {
-            // Navigation with arrow keys
+            // Arrow keys
 
 			case KEY_DOWN:
+                werase(msg_win);
 				menu_driver(settings_menu, REQ_DOWN_ITEM);
 				break;
 
 			case KEY_UP:
+                werase(msg_win);
 				menu_driver(settings_menu, REQ_UP_ITEM);
 				break;
 
 			case 10: 
                 // Enter key
-
+                werase(msg_win);
 				curr_item_index = item_index(curr_item);
                 
                 set_menu_mark(settings_menu, "  ");
+                wrefresh(settings_menu_win);
 
 				switch(curr_item_index) {
 					case 0:
@@ -201,7 +246,7 @@ void gameSettings(int *letters, int *rounds) {
 
                         str_keys = field_buffer(settings_fields[0], 0);
                         set_field_back(settings_fields[0], A_UNDERLINE);
-                        
+
                         // Input and validation
                         do {
                             // Move to the end of word in field
@@ -211,10 +256,11 @@ void gameSettings(int *letters, int *rounds) {
                             }else {
                                 form_driver(settings_form, REQ_END_LINE);
                             }
+                            wrefresh(settings_menu_win);
 
                             // Read input from the user
                             do {
-                                key = wgetch(settings_menu_win);
+                                key = getch();
 
                                 if(key == 'q') {    // exit the field
                                     set_field_buffer(settings_fields[0], 0, str_keys);
@@ -222,9 +268,12 @@ void gameSettings(int *letters, int *rounds) {
                                 }else if(key == KEY_BACKSPACE) {    // delete from the field
                                     form_driver(settings_form, REQ_DEL_CHAR);
                                     form_driver(settings_form, REQ_PREV_CHAR);
-                                }else {     // write to the field
+                                }else if(key == KEY_RESIZE) {     // write to the field
+                                    refresh_settings_menu(rows, cols, settings_menu_win, num_of_items);
+                                }else {    
                                     form_driver(settings_form, key);
                                 }
+                                wrefresh(settings_menu_win);
                             }while(key != 10);
 
                             // Check if it's valid
@@ -263,10 +312,11 @@ void gameSettings(int *letters, int *rounds) {
                             }else {
                                 form_driver(settings_form, REQ_END_LINE);
                             }
+                            wrefresh(settings_menu_win);
 
                             // Read input from the user
                             do {
-                                key = wgetch(settings_menu_win);
+                                key = getch();
 
                                 if(key == 'q') {    // exit the field
                                     set_field_buffer(settings_fields[1], 0, str_keys);
@@ -274,9 +324,12 @@ void gameSettings(int *letters, int *rounds) {
                                 }else if(key == KEY_BACKSPACE) {    // delete from the field
                                     form_driver(settings_form, REQ_DEL_CHAR);
                                     form_driver(settings_form, REQ_PREV_CHAR);
-                                }else {     // write to the field
+                                }else if(key == KEY_RESIZE) {     // write to the field
+                                    refresh_settings_menu(rows, cols, settings_menu_win, num_of_items);
+                                }else {
                                     form_driver(settings_form, key);
                                 }
+                                wrefresh(settings_menu_win);
                             }while(key != 10);
 
                             // Check if it's valid
@@ -302,13 +355,21 @@ void gameSettings(int *letters, int *rounds) {
                         // Exit settings menu
                         exitForm(&settings_form, &settings_fields, num_of_fields);
                         exitMenu(&settings_menu, &items, num_of_items);
+                        wrefresh(settings_menu_win);
                         delwin(settings_menu_win);
                         return;
 				}
 				break;
-		}
 
+            case KEY_RESIZE:
+				// On window resize
+                refresh_settings_menu(rows, cols, settings_menu_win, num_of_items);
+                break;
+		}
         set_menu_mark(settings_menu, "> ");
+
+        // Refresh everything
+        wrefresh(settings_menu_win);
 		wrefresh(msg_win);
 
 	}while(1);
