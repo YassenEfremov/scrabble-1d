@@ -5,13 +5,6 @@
 
 
 /*
- * Check if the given word is in the json trie.
- * - return 1 if it is
- * - return 0 if it isn't
- */
-int check_trie(char *word);     // This function may be moved to trie.h (or dict_handling.h ?)
-
-/*
  * > Called by letter_generation
  * Enter a word and check if it's valid.
  * *will be changed*

@@ -37,17 +37,24 @@ int addWordToDict();
  * Create a trie structure from the given string.
  */
 struct node_t *trieGenerate(char *dict_contents);
-/* Create a trie structure from the dictionary. */
+/* Create a trie structure from the dictionary */
 struct node_t *dictToTrie();
 
-
-/*
+/* 
  * > Called by trieToJson
- * Create a json string from the given trie structure.
+ * Create a json string from the given trie structure
  */
 void trieWriteJson(struct node_t *root);
 /* Write the given trie structure to the json file */
 int trieToJson(struct node_t *trie_root);
+
+
+/*
+ * Check if the given word is in the json trie.
+ * - return 1 if it is
+ * - return 0 if it isn't
+ */
+int checkTrie(char *word);
 
 
 /* --------------------------------------------------------------------------------------------- */

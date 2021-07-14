@@ -16,6 +16,7 @@ AC_PROG_CC
 AC_CHECK_LIB([ncurses], [initscr])
 AC_CHECK_LIB([menu], [post_menu])
 AC_CHECK_LIB([form], [post_form])
+AC_CHECK_LIB([config], [config_init])
 
 # Checks for header files.
 AC_CHECK_HEADERS([stddef.h stdlib.h string.h])

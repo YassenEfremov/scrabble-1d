@@ -3,10 +3,9 @@
 #include <string.h>
 #include <ncurses.h>
 #include <menu.h>
-#include <signal.h>
+#include <libconfig.h>
 #include <errno.h>
 
-#include "libs/jRead.h"
 #include "libs/trie.h"
 #include "libs/dict_handling/dict_handling.h"
 #include "libs/ui_util/ui_util.h"
@@ -23,20 +22,21 @@
  * Read the game settings from the config file and update them in-game.
  */
 static int get_settings(int* letters, int* rounds) {
-	
-	FILE *settings_json = fopen("../config/game_settings.json", "r");
-	if(!settings_json){
-		message_log("Error: game_settings.json missing! ");
+
+	config_t game_settings;
+
+	config_init(&game_settings);
+	if(config_read_file(&game_settings, "../config/game_settings.cfg") != CONFIG_TRUE) {	// TEMPORARY LOCATION
+		printf("\nError: game_settings.json missing!");
 		return 2;
 	}
 
-	char* json_string = strfcpy(settings_json);
-	fclose(settings_json);
+	config_lookup_int(&game_settings, "letters", letters);
+	config_lookup_int(&game_settings, "rounds", rounds);
+
+	config_destroy(&game_settings);
 	
-	*letters = jRead_int(json_string, "{'letters'", NULL);
-	*rounds = jRead_int(json_string, "{'rounds'", NULL);
-	
-	free(json_string);
+	return 0;
 }
 
 
