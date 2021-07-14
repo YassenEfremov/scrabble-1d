@@ -6,6 +6,7 @@
 #include <ctype.h>      // atoi
 #include "dict_handling.h"
 
+#include "libs/jRead.h"
 #include "libs/jWrite.h"
 #include "libs/trie.h"
 
@@ -216,4 +217,46 @@ int trieToJson(struct node_t *trie_root) {
     fclose(trie_json);
 
     return err_code;
+}
+
+
+/* --------------------------------------------------------------------------------------------- */
+
+
+int checkTrie(char *word) {
+
+	FILE *trie_json = fopen("../json/trie.json", "r");
+	char *json_string = strfcpy(trie_json);
+	fclose(trie_json);
+
+	int element;	// stores the value of isEndOfWord
+    
+    char *ending = "isEndOfWord'";
+    int length = strlen(word);
+    char *bigger_word = (char *)malloc(5 * sizeof(char));	// 4 + 1 byte for '\0'
+	//int new_word_len = 5;
+    
+	// Create the query string using the entered word
+    int j = 0;
+    for(int i = 0; i <= 4 * length; i+= 4, j++) {
+
+        bigger_word[i] = '{';
+        bigger_word[i+1] = '\'';	// char ' (single quote)
+        bigger_word[i+2] = word[j];
+        bigger_word[i+3] = '\'';	//char ' (single quote)
+		bigger_word[i+4] = '\0';
+
+        char *new_word = realloc(bigger_word, (strlen(bigger_word) + 5) * sizeof(char));
+		bigger_word = new_word;
+    }
+    
+    char *final_word = realloc(bigger_word, (strlen(bigger_word) + strlen(ending) + 1) * sizeof(char)); 
+    strcat(final_word, ending);
+
+	element = jRead_int(json_string, final_word, NULL);
+
+	free(json_string);
+	free(final_word);
+
+	return element;
 }

@@ -7,50 +7,11 @@
 #include <ctype.h>		// atoi
 #include "game_logic.h"
 
-#include "libs/jRead.h"
 #include "libs/dict_handling/dict_handling.h"
 
 
-// ============================================================================================= //
+/* ============================================================================================= */
 
-
-int check_trie(char *word) {
-
-	FILE *trie_json = fopen("../../json/trie.json", "r");
-	char *json_string = strfcpy(trie_json);
-	fclose(trie_json);
-
-	int element;	// stores the value of isEndOfWord
-    
-    char *ending = "isEndOfWord'";
-    int length = strlen(word);
-    char *bigger_word = (char *)malloc(5 * sizeof(char));	// 4 + 1 byte for '\0'
-	//int new_word_len = 5;
-    
-	// Create the query string using the entered word
-    int j = 0;
-    for(int i = 0; i <= 4 * length; i+= 4, j++) {
-
-        bigger_word[i] = '{';
-        bigger_word[i+1] = '\'';	// char ' (single quote)
-        bigger_word[i+2] = word[j];
-        bigger_word[i+3] = '\'';	//char ' (single quote)
-		bigger_word[i+4] = '\0';
-
-        char *new_word = realloc(bigger_word, (strlen(bigger_word) + 5) * sizeof(char));
-		bigger_word = new_word;
-    }
-    
-    char *final_word = realloc(bigger_word, (strlen(bigger_word) + strlen(ending) + 1) * sizeof(char)); 
-    strcat(final_word, ending);
-
-	element = jRead_int(json_string, final_word, NULL);
-
-	free(json_string);
-	free(final_word);
-
-	return element;
-}
 
 /*
 int check_trie_temp(char *word) {
@@ -74,7 +35,7 @@ int check_trie_temp(char *word) {
 */
 
 
-// --------------------------------------------------------------------------------------------- //
+/* --------------------------------------------------------------------------------------------- */
 
 
 int enter_and_check(char rand_letters[], int letters, int* points) {
@@ -123,7 +84,7 @@ int enter_and_check(char rand_letters[], int letters, int* points) {
 
 
 	// Check if the entered word is in the dict_trie
-	if(check_trie(word) == 0) {
+	if(checkTrie(word) == 0) {
 		// If it isn't => round points are 0
 		count = 0;
 		printf("This word is not in the dictionary!\n");
@@ -139,7 +100,7 @@ int enter_and_check(char rand_letters[], int letters, int* points) {
 }
 
 
-// --------------------------------------------------------------------------------------------- //
+/* --------------------------------------------------------------------------------------------- */
 
 
 //  Function that generates random letters for one round and prints them

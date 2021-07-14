@@ -4,14 +4,11 @@
 /* ============================================================================================= */
 
 
-/* Change the number of random letters generated per round.
- * *will be changed* */
-int change_letters(int new_letters, int rounds);
-
-/* Change the number of rounds per game.
- * *will be changed* */
-int change_rounds(int new_rounds, int letters);
-
+/*
+ * Change the number of letters and rounds.
+ * If 0 is passed to either option it isn't changed.
+ */
+static int change_settings(int new_letters, int new_rounds);
 
 /* Scrabble: Change the game settings. */
 void gameSettings(int *letters, int *rounds);

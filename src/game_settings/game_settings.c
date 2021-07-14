@@ -1,73 +1,50 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <libconfig.h>
 #include <ctype.h>      // atoi
 #include "game_settings.h"
 
-#include "libs/jRead.h"
-#include "libs/jWrite.h"
-
 
 /* ============================================================================================= */
+/* Private functions */
 
 
-int change_letters(int new_letters, int rounds) {
-		
-	FILE* settings_json = fopen("../../config/game_settings.json", "w");
-	if(!settings_json){
-		printf("\nError: settings.json missing! ");
+static int change_settings(int new_letters, int new_rounds) {
+
+    config_t game_settings;
+
+    config_init(&game_settings);
+
+    /*
+     * The options are represented by a 5 bit number. The default is 10110 (22 dec).
+     * To disable semicolons in the configuration file we reset the 4th bit using XOR.
+     */
+    config_set_options(&game_settings, 22 ^ CONFIG_OPTION_SEMICOLON_SEPARATORS);
+ 
+	if(config_read_file(&game_settings, "../config/game_settings.cfg") != CONFIG_TRUE) {    // TEMPORARY LOCATION
+		printf("\nError: game_settings.json missing!");
 		return 2;
 	}
-	
-    int json_size = 39;  // default size (when bot options are 2 digit numbers)
-    if(new_letters < 10) json_size -= 1;    // decrease the size by one
-    if(rounds < 10) json_size -= 1;    // decrease the size by one
 
-	char buffer[json_size];
-	jwOpen(buffer, json_size, JW_OBJECT, JW_PRETTY);
-	jwObj_int("letters", new_letters);
-	jwObj_int("rounds", rounds);
-	int err_code = jwClose();
+    config_setting_t *root = config_root_setting(&game_settings);
+    config_setting_t *letters = config_setting_lookup(root, "letters");
+    config_setting_t *rounds = config_setting_lookup(root, "rounds");
 
-	fwrite(buffer, json_size, 1, settings_json);
-	
-	fclose(settings_json);
+    // If 0 is passed we don't change the setting
+    if(new_letters != 0) config_setting_set_int(letters, new_letters);
+    if(new_rounds != 0) config_setting_set_int(rounds, new_rounds);
 
-    return err_code;
-}
+    config_write_file(&game_settings, "../config/game_settings.cfg");   // TEMPORARY LOCATION
 
+    config_destroy(&game_settings);
 
-/* --------------------------------------------------------------------------------------------- */
-
-
-int change_rounds(int new_rounds, int letters) {
-		
-	FILE* settings_json = fopen("../../config/game_settings.json", "w");
-	
-	if(!settings_json){
-		printf("\nError: settings.json missing! ");
-		return 2;
-	}
-	
-    int json_size = 39;  // default size (when bot options are 2 digit numbers)
-    if(new_rounds < 10) json_size -= 1;    // decrease the size by one
-    if(letters < 10) json_size -= 1;    // decrease the size by one
-
-	char buffer[json_size];
-	jwOpen(buffer, json_size, JW_OBJECT, JW_PRETTY);
-	jwObj_int("letters", letters);
-	jwObj_int("rounds", new_rounds);
-	int err_code = jwClose();
-
-	fwrite(buffer, json_size, 1, settings_json);
-	
-	fclose(settings_json);
-
-    return err_code;
+    return 0;
 }
 
 
 /* ============================================================================================= */
+/* Public functions */
 
 
 void gameSettings(int *letters, int *rounds) {
@@ -116,9 +93,9 @@ void gameSettings(int *letters, int *rounds) {
                     }
                     
                     flag = 1;
-                    err_code = change_letters(new_letters, *rounds);
+                    err_code = change_settings(new_letters, 0);
 
-                    if(err_code != JWRITE_OK) {
+                    if(err_code != 0) {
                         printf("Error: change_letters failed!");
                         return;
                     }
@@ -140,9 +117,9 @@ void gameSettings(int *letters, int *rounds) {
                     }
                     
                     flag = 1;
-                    err_code = change_rounds(new_rounds, *letters);
+                    err_code = change_settings(0, new_rounds);
 
-                    if(err_code != JWRITE_OK) {
+                    if(err_code != 0) {
                         printf("Error: change_rounds failed!");
                         return;
                     }

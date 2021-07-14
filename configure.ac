@@ -13,6 +13,7 @@ LT_INIT
 AC_PROG_CC
 
 # Checks for libraries.
+AC_CHECK_LIB([config], [config_init])
 
 # Checks for header files.
 AC_CHECK_HEADERS([stddef.h stdlib.h string.h])

@@ -4,6 +4,7 @@
 *.lo
 *.la
 *.cache
+*~
 Makefile
 Makefile.in
 
