@@ -54,10 +54,7 @@ static int change_settings(int new_letters, int new_rounds) {
 /* --------------------------------------------------------------------------------------------- */
 
 
-/*
- * Refresh the settings menu screen. (use on resize of terminal)
- */
-void refresh_settings_menu(int rows, int cols, WINDOW *settings_menu_win, int num_of_items) {
+static void refresh_settings_menu(int rows, int cols, WINDOW *settings_menu_win, int num_of_items) {
 
 	endwin();
 	refresh();
@@ -78,6 +75,99 @@ void refresh_settings_menu(int rows, int cols, WINDOW *settings_menu_win, int nu
 	// Refresh the necessay elements
 	refresh();
 	wrefresh(title_win);
+}
+
+
+/* --------------------------------------------------------------------------------------------- */
+
+
+static char *take_field_input(int fld_index, char *err_msg,
+                              WINDOW *settings_menu_win,
+                              FORM *settings_form, FIELD **settings_fields, 
+                              int rows, int cols, int num_of_items) {
+
+    int key;
+    int is_valid;
+
+    char *field_str = field_buffer(settings_fields[fld_index], 0);   // read previous setting
+    char field_save[3];     // save it to a string
+    strcpy(field_save, field_str);
+    
+    set_field_back(settings_fields[fld_index], A_UNDERLINE);
+
+    // Input and validation
+    do {
+        // Move to the correct field and posiotion
+        form_driver(settings_form, REQ_FIRST_FIELD);
+        for(int i = 0; i < fld_index; i++) form_driver(settings_form, REQ_NEXT_FIELD);    // move to specified field
+        for(int i = 0; field_str[i+1] != ' '; i++) form_driver(settings_form, REQ_NEXT_CHAR); // move to end of word
+        wrefresh(settings_menu_win);
+
+        // Read input from the user
+        do {
+            key = getch();
+
+            switch(key) {
+                /* All possible actions in the field */
+
+                case KEY_BACKSPACE:  // delete from the field
+                    form_driver(settings_form, REQ_DEL_CHAR);
+                    form_driver(settings_form, REQ_PREV_CHAR);
+                    break;
+
+                case 'q':  // exit the field
+                    if(is_valid != E_OK) strcpy(field_str, field_save);
+                    set_field_buffer(settings_fields[fld_index], 0, field_str);
+                    werase(msg_win);
+                    set_field_back(settings_fields[fld_index], A_NORMAL);
+                    wrefresh(settings_menu_win);
+                    return field_str;
+
+                case 10:  // Enter key (validate input)
+                    form_driver(settings_form, REQ_VALIDATION);  // update field buffer
+
+                    for(int i = 0; field_str[i] != '\0'; i++) {
+                        if(field_str[i] == ' ') {
+                            // if every char in the field is a space -> field isn't valid
+                            is_valid = E_BAD_ARGUMENT;
+                        }else {
+                            // if the field isn't entirely spaces -> validate the actual data in it
+                            is_valid = form_driver(settings_form, REQ_VALIDATION);
+                            break;
+                        }
+                    }
+                    
+
+                    if(is_valid != E_OK) {
+                        werase(msg_win);
+                        message_log(err_msg);
+                        wrefresh(msg_win);
+                    }else {
+                        field_str = field_buffer(settings_fields[fld_index], 0);
+                    }
+                    break;
+
+                case KEY_RESIZE:  // on window resize
+                    refresh_settings_menu(rows, cols, settings_menu_win, num_of_items);
+                    break;
+
+                default:  // write to the field
+                    form_driver(settings_form, REQ_VALIDATION);     // update field buffer
+                    // in an empty field the first char is always a space
+                    if(field_str[0] != ' ') form_driver(settings_form, REQ_NEXT_CHAR);
+                    form_driver(settings_form, key);
+                    break;
+            }
+            wrefresh(settings_menu_win);
+
+        }while(key != 10);
+
+    }while(is_valid != E_OK);
+
+    werase(msg_win);
+    set_field_back(settings_fields[fld_index], A_NORMAL);
+
+    return field_str;
 }
 
 
@@ -127,7 +217,6 @@ void gameSettings(int *letters, int *rounds) {
     // Menu
 	WINDOW *settings_menu_win = newwin(num_of_items, 14, rows/2 - num_of_items/2, cols/2 - 7);
 	MENU *settings_menu = new_menu((ITEM **)items);
-	
 	set_menu_win(settings_menu, settings_menu_win);
     set_menu_sub(settings_menu, settings_menu_win);
 
@@ -207,8 +296,7 @@ void gameSettings(int *letters, int *rounds) {
 				menu_driver(settings_menu, REQ_UP_ITEM);
 				break;
 
-			case 10: 
-                // Enter key
+			case 10:  // Enter key
                 werase(msg_win);
 				curr_item_index = item_index(curr_item);
                 
@@ -217,114 +305,27 @@ void gameSettings(int *letters, int *rounds) {
 
 				switch(curr_item_index) {
 					case 0:
-                        /* --------------------------------------------------------------------- */
                         /* Letters field */
 
-                        str_keys = field_buffer(settings_fields[0], 0);
-                        set_field_back(settings_fields[0], A_UNDERLINE);
+                        str_keys = take_field_input(curr_item_index, "Invalid! Letters are from 2 to 26.",
+                                                    settings_menu_win,
+                                                    settings_form, settings_fields,
+                                                    rows, cols, num_of_items);
 
-                        // Input and validation
-                        do {
-                            // Move to the end of word in field
-                            form_driver(settings_form, REQ_FIRST_FIELD);
-                            if(atoi(str_keys) < 10) {
-                                form_driver(settings_form, REQ_BEG_LINE);
-                            }else {
-                                form_driver(settings_form, REQ_END_LINE);
-                            }
-                            wrefresh(settings_menu_win);
+                        change_settings(atoi(str_keys), 0); // Write the entered data to the settings file
 
-                            // Read input from the user
-                            do {
-                                key = getch();
-
-                                if(key == 'q') {    // exit the field
-                                    set_field_buffer(settings_fields[0], 0, str_keys);
-                                    break;
-                                }else if(key == KEY_BACKSPACE) {    // delete from the field
-                                    form_driver(settings_form, REQ_DEL_CHAR);
-                                    form_driver(settings_form, REQ_PREV_CHAR);
-                                }else if(key == KEY_RESIZE) {     // write to the field
-                                    refresh_settings_menu(rows, cols, settings_menu_win, num_of_items);
-                                }else {    
-                                    form_driver(settings_form, key);
-                                }
-                                wrefresh(settings_menu_win);
-                            }while(key != 10);
-
-                            // Check if it's valid
-                            is_valid = form_driver(settings_form, REQ_VALIDATION);
-                            if(is_valid != E_OK) {
-                                message_log("Invalid! Letters are from 2 to 26.");
-                                wrefresh(msg_win);
-                            }else {
-                                str_keys = field_buffer(settings_fields[0], 0);
-                            }
-
-                        }while(is_valid != E_OK);
-
-                        werase(msg_win);
-                        
-                        // Move the entered data to the field buffer
-                        str_keys = field_buffer(settings_fields[0], 0);
-                        change_letters(atoi(str_keys), *rounds);     // Write it to the settings
-
-                        set_field_back(settings_fields[0], A_NORMAL);
 						break;
 
 					case 1:
-                        /* --------------------------------------------------------------------- */
 						/* Rounds field */
 
-                        str_keys = field_buffer(settings_fields[1], 0);
-                        set_field_back(settings_fields[1], A_UNDERLINE); 
+                        str_keys = take_field_input(curr_item_index, "Invalid! Rounds are from 1 to 99.",
+                                                    settings_menu_win,
+                                                    settings_form, settings_fields,
+                                                    rows, cols, num_of_items);
 
-                        // Input validation
-                        do {
-                            // Move to the end of word in field
-                            form_driver(settings_form, REQ_LAST_FIELD);
-                            if(atoi(str_keys) < 10) {
-                                form_driver(settings_form, REQ_BEG_LINE);
-                            }else {
-                                form_driver(settings_form, REQ_END_LINE);
-                            }
-                            wrefresh(settings_menu_win);
+                        change_settings(0, atoi(str_keys)); // Write the entered data to the settings file
 
-                            // Read input from the user
-                            do {
-                                key = getch();
-
-                                if(key == 'q') {    // exit the field
-                                    set_field_buffer(settings_fields[1], 0, str_keys);
-                                    break;
-                                }else if(key == KEY_BACKSPACE) {    // delete from the field
-                                    form_driver(settings_form, REQ_DEL_CHAR);
-                                    form_driver(settings_form, REQ_PREV_CHAR);
-                                }else if(key == KEY_RESIZE) {     // write to the field
-                                    refresh_settings_menu(rows, cols, settings_menu_win, num_of_items);
-                                }else {
-                                    form_driver(settings_form, key);
-                                }
-                                wrefresh(settings_menu_win);
-                            }while(key != 10);
-
-                            // Check if it's valid
-                            is_valid = form_driver(settings_form, REQ_VALIDATION);
-                            if(is_valid != E_OK) {
-                                message_log("Invalid! Rounds are from 1 to 99.");
-                                wrefresh(msg_win);
-                            }else {
-                                str_keys = field_buffer(settings_fields[1], 0);
-                            }
-
-                        }while(is_valid != E_OK);                
-                        
-                        wrefresh(msg_win);
-
-                        str_keys = field_buffer(settings_fields[1], 0);
-                        change_rounds(atoi(str_keys), *letters);     // Write it to the settings
-
-                        set_field_back(settings_fields[1], A_NORMAL);
 						break;
 
 					case 2:

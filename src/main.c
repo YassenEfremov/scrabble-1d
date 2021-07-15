@@ -18,9 +18,7 @@
 /* Private functions */
 
 
-/*
- * Read the game settings from the config file and update them in-game.
- */
+/* Read the game settings from the config file and update them in-game. */
 static int get_settings(int* letters, int* rounds) {
 
 	config_t game_settings;
@@ -40,10 +38,8 @@ static int get_settings(int* letters, int* rounds) {
 }
 
 
-/*
- * Refresh the main menu screen. (use on resize of terminal)
- */
-void refresh_main_menu(int rows, int cols, WINDOW *main_menu_win, int num_of_items) {
+/* Refresh the main menu screen. (use on resize of terminal) */
+static void refresh_main_menu(int rows, int cols, WINDOW *main_menu_win, int num_of_items) {
 
 	endwin();
 	refresh();
@@ -74,7 +70,7 @@ int main(int argc, char *argv[]) {
 
 	struct node_t *trie_root;
 
-	// Start ncurses
+	/* Start ncurses */
 
 	// Start main window
 	initscr();
@@ -127,7 +123,6 @@ int main(int argc, char *argv[]) {
 	// Menu
 	WINDOW *main_menu_win = newwin(num_of_items, 12, rows/2 - num_of_items/2, cols/2 - 6);
 	MENU *main_menu = new_menu((ITEM **)items);
-
 	set_menu_win(main_menu, main_menu_win);
 	set_menu_sub(main_menu, main_menu_win);
 
@@ -202,35 +197,40 @@ int main(int argc, char *argv[]) {
 				menu_driver(main_menu, REQ_UP_ITEM);
 				break;
 
-			case 10:
-				// Enter key
+			case 10:  // Enter key
 				werase(msg_win);
 				curr_item_index = item_index(curr_item);
 
 				switch(curr_item_index) {
+					// Select the current item
+
 					case 0:
-						// Start a game
+						/* ------------- Start game ------------- */
+
 						//startGame(letters, rounds);
 						message_log(soon_msg);
 						break;
 
 					case 1:
-						// Open game settings
-						unpost_menu(main_menu);		// hide the main menu
+						/* --------- Open game settings --------- */
+
+						unpost_menu(main_menu);  		  // hide the main menu
 						wrefresh(main_menu_win);
-						get_settings(&letters, &rounds);
+						get_settings(&letters, &rounds);  // copy settings to in-game buffers
 						gameSettings(&letters, &rounds);
-						post_menu(main_menu);		// unhide the main menu
+						post_menu(main_menu);  			  // unhide the main menu
 						break;
 
 					case 2:
-						// Add a word to the dictionary
+						/* ---- Add a word to the dictionary ---- */
+
 						//addWordToDict();
 						message_log(soon_msg);
 						break;
 
 					case 3:
-						// Exit the app
+						/* ------------ Exit the app ------------ */
+
 						exitMenu(&main_menu, &items, num_of_items);
 						curs_set(1);
 
