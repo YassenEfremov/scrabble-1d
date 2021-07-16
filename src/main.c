@@ -40,7 +40,7 @@ static int get_settings(int* letters, int* rounds) {
 
 int main(int argc, char *argv[]) {
 
-	char menu[1];	// the size of this array DOESN'T cause problems because we directly exit the program
+	char menu[30];	// the size of this array causes problems
 	int value;
 	//int to_free = 0;	// flag
 

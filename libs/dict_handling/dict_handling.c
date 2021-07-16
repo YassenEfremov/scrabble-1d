@@ -41,7 +41,7 @@ char *strfcpy(FILE *file) {
 int addWordToDict() {
 
     // Open the dictionary for appending and reading
-    FILE *dict = fopen("../../config/dictionary.txt", "a+");
+    FILE *dict = fopen("../config/dictionary.txt", "a+");
 
     if(!dict) {
         // Catch any exeptions
@@ -138,7 +138,7 @@ struct node_t *trieGenerate(char *dict_contents) {
 
 struct node_t *dictToTrie() {
 
-    FILE *dict = fopen("../../config/dictionary.txt", "r");
+    FILE *dict = fopen("../config/dictionary.txt", "r");
 
     if(!dict) {
         // Catch any exeptions
@@ -192,7 +192,7 @@ void trieWriteJson(struct node_t *root) {
 
 int trieToJson(struct node_t *trie_root) {
 
-    FILE *trie_json = fopen("../../json/trie.json", "w");
+    FILE *trie_json = fopen("../json/trie.json", "w");
 
     if(!trie_json) {
         // Catch any exeptions
