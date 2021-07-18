@@ -1,11 +1,12 @@
 # Build folder
 Here are the instructions for building the application.
 
-You need to have installed:
-- Tools for building:
+## Dependencies
+The application depends on these libraries being installed:
+- When building from source code the following tools are needed:
   - ```autoconf```
   - ```automke```
-- Libraries:
+- These libraries are always needed:
   - ```ncurses```
   - ```menu```
   - ```form```
