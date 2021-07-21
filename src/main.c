@@ -1,10 +1,9 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <glib.h>
 #include <ncurses.h>
 #include <menu.h>
-#include <libconfig.h>
-#include <errno.h>
 
 #include "libs/trie.h"
 #include "libs/dict_handling/dict_handling.h"
@@ -19,23 +18,31 @@
 
 
 /* Read the game settings from the config file and update them in-game. */
-static int get_settings(int* letters, int* rounds) {
+static int get_settings(int *letters, int *rounds) {
 
-	config_t game_settings;
+	GKeyFile *game_settings;
+	GKeyFileFlags conf_flags;
+	GError *conf_error = NULL;
 
-	config_init(&game_settings);
-	if(config_read_file(&game_settings, "../config/game_settings.cfg") != CONFIG_TRUE) {	// TEMPORARY LOCATION
-		printf("\nError: game_settings.json missing!");
-		return 2;
-	}
+	game_settings = g_key_file_new();
+	conf_flags = G_KEY_FILE_KEEP_COMMENTS | G_KEY_FILE_KEEP_TRANSLATIONS;	// set those 2 flags
 
-	config_lookup_int(&game_settings, "letters", letters);
-	config_lookup_int(&game_settings, "rounds", rounds);
+	// Open config file and catch any errors			TEMPORARY LOCATION
+    if(!g_key_file_load_from_file(game_settings, "../config/game_settings.cfg", conf_flags, &conf_error)) {
+    	g_error("%s", conf_error->message);
+      	return 2;
+    }
 
-	config_destroy(&game_settings);
-	
+	*letters = g_key_file_get_integer(game_settings, "Settings", "letters", &conf_error);
+	*rounds = g_key_file_get_integer(game_settings, "Settings", "rounds", &conf_error);
+
+	g_key_file_free(game_settings);
+
 	return 0;
 }
+
+
+/* --------------------------------------------------------------------------------------------- */
 
 
 /* Refresh the main menu screen. (use on resize of terminal) */
@@ -45,14 +52,19 @@ static void refresh_main_menu(int rows, int cols, WINDOW *main_menu_win, int num
 	refresh();
 	clear();
 	getmaxyx(stdscr, rows, cols);	// get the new dimentions of the main screen
-	//printw("%d %d", rows, cols);	
+	//printw("%d %d", rows/2 - num_of_items/2, cols/2 - 6);	
 
-	// If the size of the terminal is smaller than (39, 5) everything glitches out!				// TO DO
+	// If the size of the terminal is smaller than [39, 5] everything glitches out!				// TO DO
 	mvwin(main_menu_win, rows/2 - num_of_items/2, cols/2 - 6);
-
-	mvwin(title_win, main_menu_win->_begy - num_of_items - 3, cols/2 - 19);
+	mvwin(title_win, main_menu_win->_begy - 4 - 3, cols/2 - 19);
 	mvwin(msg_win, main_menu_win->_begy + num_of_items + 3, cols/2 - MSG_LEN/2);
 
+/*	WHEN THE SCREEN IS TOO SMALL SOME ELEMENTS DON'T APPEAR									// TO DO
+	if(rows < 18) {
+		mvwin(main_menu_win, rows/2 - num_of_items/2 + 18/rows, cols/2 - 6);
+		mvwin(title_win, main_menu_win->_begy - 4 - 3, cols/2 - 19);
+	}
+*/
 	// Refresh the necessay elements
 	refresh();
 	wrefresh(title_win);
@@ -64,6 +76,8 @@ static void refresh_main_menu(int rows, int cols, WINDOW *main_menu_win, int num
 
 
 int main(int argc, char *argv[]) {
+
+	// Program variables
 
 	int letters;
 	int rounds;
@@ -79,6 +93,8 @@ int main(int argc, char *argv[]) {
 	start_color();
 	init_pair(1, COLOR_GREEN, COLOR_BLACK);		// Menu title green
 	init_pair(2, COLOR_WHITE, COLOR_BLACK);		// Menu background
+	init_pair(3, COLOR_CYAN, COLOR_BLACK);	// Final round blue
+	init_pair(4, COLOR_YELLOW, COLOR_BLACK);		// Game over yellow
 	init_pair(99, COLOR_MAGENTA, COLOR_GREEN);	// For debugging
 
 	// Other settings
@@ -88,10 +104,8 @@ int main(int argc, char *argv[]) {
 	curs_set(0);
 	refresh();
 
-	get_settings(&letters, &rounds);
 
-
-	// Predefined data used by ncurses
+	// Predefined data
 
 	int rows, cols;
 	getmaxyx(stdscr, rows, cols);	// get the dimentions of the main screen
@@ -107,7 +121,6 @@ int main(int argc, char *argv[]) {
 	ITEM *curr_item;
 	int key;
 	int curr_item_index;
-
 
 
 	/* --------------------------------------------------------------------------------------------- */
@@ -164,12 +177,20 @@ int main(int argc, char *argv[]) {
 	char *soon_msg = "Coming soon!";
 	message_log(nav_guide_msg);
 
+	// Line
+	//move(msg_win->_begy - 1, msg_win->_begx);
+	//hline(ACS_HLINE, MSG_LEN);
+
 
 	/* --------------------------------------------------------------------------------------------- */
 
 
 	// Post the menu
 	post_menu(main_menu);
+
+   //mvprintw(0, 0, "PATH : %s\n", getenv("PATH"));
+   //mvprintw(1, 0, "HOME : %s\n", getenv("HOME"));
+   //mvprintw(2, 0, "ROOT : %s\n", getenv("ROOT"));
 
 	// Refresh everything
 	wrefresh(main_menu_win);
@@ -198,8 +219,9 @@ int main(int argc, char *argv[]) {
 				break;
 
 			case 10:  // Enter key
-				werase(msg_win);
 				curr_item_index = item_index(curr_item);
+				get_settings(&letters, &rounds);	// refresh settings
+				werase(msg_win);
 
 				switch(curr_item_index) {
 					// Select the current item
@@ -207,8 +229,10 @@ int main(int argc, char *argv[]) {
 					case 0:
 						/* ------------- Start game ------------- */
 
-						//startGame(letters, rounds);
-						message_log(soon_msg);
+						unpost_menu(main_menu);  		  // hide the main menu
+						wrefresh(main_menu_win);
+						startGame(letters, rounds);
+						post_menu(main_menu);  			  // unhide the main menu
 						break;
 
 					case 1:
@@ -216,7 +240,6 @@ int main(int argc, char *argv[]) {
 
 						unpost_menu(main_menu);  		  // hide the main menu
 						wrefresh(main_menu_win);
-						get_settings(&letters, &rounds);  // copy settings to in-game buffers
 						gameSettings(&letters, &rounds);
 						post_menu(main_menu);  			  // unhide the main menu
 						break;

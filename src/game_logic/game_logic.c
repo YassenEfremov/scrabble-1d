@@ -5,38 +5,17 @@
 #include <string.h>
 #include <time.h>
 #include <ctype.h>		// atoi
+#include <ncurses.h>
+#include <menu.h>
+#include <form.h>
 
 #include "libs/dict_handling/dict_handling.h"
+#include "libs/ui_util/ui_util.h"
 
 #include "game_logic.h"
 
 
 /* ============================================================================================= */
-
-
-/*
-int check_trie_temp(char *word) {
-	// DON'T DELETE THIS CODE, it might be needed in the future
-	// Check if the word is in the trie structure (not the json file)
-
-    struct node_t *temp = &dict_trie_root;
-    int letter_index;
-
-    for(int level = 0; level < strlen(word); level++) {
-        letter_index = (int)(word[level] - 'a');
-
-        if(temp->children[letter_index] == NULL) return 0;
-        printf("%p ", temp->children[letter_index]);
-        temp = temp->children[letter_index];
-    }
-
-    printf("(%d)", (temp != NULL && temp->isEndOfWord));
-    return (temp != NULL && temp->isEndOfWord);
-}
-*/
-
-
-/* --------------------------------------------------------------------------------------------- */
 
 
 int enter_and_check(char rand_letters[], int letters, int* points) {
@@ -83,6 +62,8 @@ int enter_and_check(char rand_letters[], int letters, int* points) {
 		}
 	}
 
+/*
+	CHCCK TRIE CAUSES COMPILATION PROBLEMS!
 
 	// Check if the entered word is in the dict_trie
 	if(checkTrie(word) == 0) {
@@ -92,7 +73,7 @@ int enter_and_check(char rand_letters[], int letters, int* points) {
 		printf("Try again(or skip)\n");
 		return 0;
 	}
-
+*/
 
 	*points += count;
 	printf("\n\nTotal points: %d\n", *points);
@@ -139,22 +120,114 @@ void letter_generation(int letters, int *points) {
 
 void startGame(int letters, int rounds) {
 
+	erase();
+	refresh();
+
+	// Game variables
+
 	int points = 0;
+
+
+	// Predefined data
+
+	int rows, cols;
+	getmaxyx(stdscr, rows, cols);	// get the dimentions of the main screen
+
+	int key;
+
+
+	/* ----------------------------------------------------------------------------------------- */
+	/* Setup */
+
+	// Game window
+	WINDOW *game_win = newwin(0.8 * rows, 0.8 * cols,	// size is 80% of the screen
+							  0.1 * rows, 0.1 * cols);	// start is at 10% of the screen
+	box(game_win, 0, 0);
+
+
+	/* ----------------------------------------------------------------------------------------- */
+
+
+	// Small title
+	attron(COLOR_PAIR(1));
+	attron(A_BOLD);
+	mvaddstr(game_win->_begy - 1, game_win->_begx + getmaxx(game_win)/2 - 4, "SCRABBLE");
+	attroff(A_BOLD);
+	attroff(COLOR_PAIR(1));
+
+	// Reposition message window
+	mvwin(msg_win, game_win->_begy + 0.8 * rows + 1, cols/2 - MSG_LEN/2);
+
+	// Refresh everything
+	wrefresh(game_win);
+	wrefresh(msg_win);
+
+
+	/* ----------------------------------------------------------------------------------------- */
+	/* Game loop */
+
+	// Round loop
+	for(int r = 0; r < rounds; r++, points += 5) {
 		
-	for(int i = 0; i < rounds; i++){
-		printf("\n\n-- Round %d --\n", i+1);
-        letter_generation(letters, &points);
+		wattron(game_win, A_BOLD);
+
+		// Print current round
+		mvwprintw(game_win, 1, 1, "Round #%d", r+1);
+		if(r + 1 == rounds) {
+			// Last round
+			wattron(game_win, COLOR_PAIR(3));
+			mvwprintw(game_win, 2, getmaxx(game_win)/2 - 6, "FINAL ROUND!");
+			wattroff(game_win, COLOR_PAIR(3));
+		}
+
+		// Print current points
+		mvwprintw(game_win, 1, getmaxx(game_win) - 11, "Points: %d", points);
+
+		wattroff(game_win, A_BOLD);
+
+
+		//> generate random letters
+
+		wrefresh(game_win);
+
+		// Read input from the user
+		do {
+			key = getch();
+
+			switch(key) {
+				/* All possible actions in-game */
+
+				default:
+					//mvwprintw(game_win, 3, 3, "%c", key);
+					break;
+			}
+			wrefresh(game_win);
+
+		}while(key != 10);	// Enter key
+
+        //> check the entered word
+
+		if(r + 1 == rounds) {
+			// This is the last round -> display ending screen
+
+			wattron(game_win, A_BOLD);
+
+			werase(game_win);
+			box(game_win, 0, 0);
+			wattron(game_win, COLOR_PAIR(4));
+			mvwprintw(game_win, 2, getmaxx(game_win)/2 - 5, "GAME OVER!");
+			wattroff(game_win, COLOR_PAIR(4));
+
+			mvwprintw(game_win, getmaxy(game_win)/2, getmaxx(game_win)/2 - 7, "Final score: %d", points);
+
+			wattroff(game_win, A_BOLD);
+
+			mvwprintw(game_win, getmaxy(game_win) - 2, getmaxx(game_win)/2 - 13, "Press ENTER to continue...");
+
+			wrefresh(game_win);
+			getch();
+		}
 	}
-	
-	// At the end of the game
-	printf(
-		"\n\n\n"
-		"#-----------------------#"
-		"\n"
-		"Game Over! Total points: %d\n", points
-		);
-	printf("Press ENTER to exit...");
-	// getchar is called twice because the first enter is taken from the last word submition
-	getchar();
-	getchar();
+
+	delwin(game_win);
 }

@@ -1,12 +1,41 @@
-## Build folder
-Use this forder to build the application:
-- Download the source code from **Github**:
+# Build folder
+Here are the instructions for building the application.
 
-  ```git clone https://github.com/YassenEfremov/elsys-10A-scrabble```
+## Dependencies
+The application depends on these libraries being installed:
+- When building from source code the following tools are needed:
+  - ```autoconf```
+  - ```automke```
+  - ```pkg-config```
+- These libraries are always needed:
+  - ```glib-2.0```
+  - ```ncurses```
+  - ```menu```
+  - ```form```
 
-- navigate to the ```build/``` folder
-- run ```configure``` from the **parent folder** by typing ```../configure```
-- run ```make```
-- navigate to the newly created ```src/``` folder and run ```./scrabble```
 
-Optional: run ```sudo make install``` to install the application
+## Build from tarball
+After downloading and extracting the latest release archive do:
+```
+cd scrabble/build/
+../configure
+make
+```
+To run the game: **From the build folder** do:
+```
+./src/scrabble
+```
+
+## Build from source code
+After downloading the source code from Github do:
+```
+cd scrabble/
+./autogen.sh
+cd build/
+../configure
+make
+```
+To run the game: **From the build folder** do:
+```
+./src/scrabble
+```

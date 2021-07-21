@@ -41,6 +41,26 @@ bool search(struct node_t *root, const char *key)
     return (pCrawl != NULL && pCrawl->isEndOfWord);
 }
 */
+/*
+int check_trie_temp(char *word) {
+	// DON'T DELETE THIS CODE, it might be needed in the future
+	// Check if the word is in the trie structure (not the json file)
+
+    struct node_t *temp = &dict_trie_root;
+    int letter_index;
+
+    for(int level = 0; level < strlen(word); level++) {
+        letter_index = (int)(word[level] - 'a');
+
+        if(temp->children[letter_index] == NULL) return 0;
+        printf("%p ", temp->children[letter_index]);
+        temp = temp->children[letter_index];
+    }
+
+    printf("(%d)", (temp != NULL && temp->isEndOfWord));
+    return (temp != NULL && temp->isEndOfWord);
+}
+*/
 
 
 /* --------------------------------------------------------------------------------------------- */

@@ -3,8 +3,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <libconfig.h>
 #include <ctype.h>      // atoi
+#include <glib.h>
 #include <ncurses.h>
 #include <menu.h>
 #include <form.h>
@@ -20,32 +20,25 @@
 
 static int change_settings(int new_letters, int new_rounds) {
 
-    config_t game_settings;
+	GKeyFile *game_settings;
+	GKeyFileFlags conf_flags;
+	GError *conf_error = NULL;
 
-    config_init(&game_settings);
+	game_settings = g_key_file_new();
+	conf_flags = G_KEY_FILE_KEEP_COMMENTS | G_KEY_FILE_KEEP_TRANSLATIONS;   // set those 2 flags
 
-    /*
-     * The options are represented by a 5 bit number. The default is 10110 (22 dec).
-     * To disable semicolons in the configuration file we reset the 4th bit using XOR.
-     */
-    config_set_options(&game_settings, 22 ^ CONFIG_OPTION_SEMICOLON_SEPARATORS);
- 
-	if(config_read_file(&game_settings, "../config/game_settings.cfg") != CONFIG_TRUE) {    // TEMPORARY LOCATION
-		printf("\nError: game_settings.json missing!");
-		return 2;
-	}
+	// Open config file and catch any errors			TEMPORARY LOCATION
+    if(!g_key_file_load_from_file(game_settings, "../config/game_settings.cfg", conf_flags, &conf_error)) {
+    	g_error("%s", conf_error->message);
+      	return 2;
+    }
 
-    config_setting_t *root = config_root_setting(&game_settings);
-    config_setting_t *letters = config_setting_lookup(root, "letters");
-    config_setting_t *rounds = config_setting_lookup(root, "rounds");
+    if(new_letters != 0) g_key_file_set_integer(game_settings, "Settings", "letters", new_letters);
+    if(new_rounds != 0) g_key_file_set_integer(game_settings, "Settings", "rounds", new_rounds);
 
-    // If 0 is passed we don't change the setting
-    if(new_letters != 0) config_setting_set_int(letters, new_letters);
-    if(new_rounds != 0) config_setting_set_int(rounds, new_rounds);
+    g_key_file_save_to_file(game_settings, "../config/game_settings.cfg", &conf_error);
 
-    config_write_file(&game_settings, "../config/game_settings.cfg");   // TEMPORARY LOCATION
-
-    config_destroy(&game_settings);
+	g_key_file_free(game_settings);
 
     return 0;
 }
@@ -72,6 +65,8 @@ static void refresh_settings_menu(int rows, int cols, WINDOW *settings_menu_win,
 	mvwin(title_win, settings_menu_win->_begy - 4 - 4, cols/2 - 19);
 	mvwin(msg_win, settings_menu_win->_begy + num_of_items + 3, cols/2 - MSG_LEN/2);
 
+    // WHEN THE SCREEN IS TOO SMALL SOME ELEMENTS DISAPPEAR										// TO DO
+
 	// Refresh the necessay elements
 	refresh();
 	wrefresh(title_win);
@@ -86,13 +81,15 @@ static char *take_field_input(int fld_index, char *err_msg,
                               FORM *settings_form, FIELD **settings_fields, 
                               int rows, int cols, int num_of_items) {
 
-    int key;
     int is_valid;
+    int key;
 
+    // THIS STRING IS NOT PROPERLY '\0' TERMINATED!                                                 // TO DO
     char *field_str = field_buffer(settings_fields[fld_index], 0);   // read previous setting
     char field_save[3];     // save it to a string
     strcpy(field_save, field_str);
     
+
     set_field_back(settings_fields[fld_index], A_UNDERLINE);
 
     // Input and validation
@@ -100,7 +97,7 @@ static char *take_field_input(int fld_index, char *err_msg,
         // Move to the correct field and posiotion
         form_driver(settings_form, REQ_FIRST_FIELD);
         for(int i = 0; i < fld_index; i++) form_driver(settings_form, REQ_NEXT_FIELD);    // move to specified field
-        for(int i = 0; field_str[i+1] != ' '; i++) form_driver(settings_form, REQ_NEXT_CHAR); // move to end of word
+        for(int i = 0; field_str[i+1] != ' ' && i != strlen(field_str); i++) form_driver(settings_form, REQ_NEXT_CHAR); // move to end of word
         wrefresh(settings_menu_win);
 
         // Read input from the user
@@ -136,7 +133,6 @@ static char *take_field_input(int fld_index, char *err_msg,
                             break;
                         }
                     }
-                    
 
                     if(is_valid != E_OK) {
                         werase(msg_win);
@@ -160,12 +156,13 @@ static char *take_field_input(int fld_index, char *err_msg,
             }
             wrefresh(settings_menu_win);
 
-        }while(key != 10);
+        }while(key != 10);  // Enter key
 
     }while(is_valid != E_OK);
 
     werase(msg_win);
     set_field_back(settings_fields[fld_index], A_NORMAL);
+
 
     return field_str;
 }
@@ -179,11 +176,12 @@ void gameSettings(int *letters, int *rounds) {
 
     refresh();
 
-    // Used for writing to the field buffer
-    char str_letters[3];
-    char str_rounds[3];
+    // Settings variables
 
-    // Predefined data used by ncurses
+    char *field_str;
+
+
+    // Predefined data
 
     int rows, cols;
 	getmaxyx(stdscr, rows, cols);	// get the dimentions of the main screen
@@ -197,11 +195,13 @@ void gameSettings(int *letters, int *rounds) {
     int num_of_fields = 2;
 
 	ITEM *curr_item;
-	int key;
-    //char str_value[3];
-    char *str_keys;
 	int curr_item_index;
-    int is_valid;
+
+	int key;
+
+    // Used for writing to the field buffer
+    char str_letters[3];
+    char str_rounds[3];
 
 
     /* ----------------------------------------------------------------------------------------- */
@@ -231,8 +231,8 @@ void gameSettings(int *letters, int *rounds) {
     // Fields
     FIELD **settings_fields = (FIELD **)calloc(num_of_fields + 1, sizeof(FIELD *));
 
-	settings_fields[0] = new_field(1, 2, 0, 11, 0, 0);
-    settings_fields[1] = new_field(1, 2, 1, 11, 0, 0);
+	settings_fields[0] = new_field(1, 2, 0, 11, 0, 1);
+    settings_fields[1] = new_field(1, 2, 1, 11, 0, 1);
 	settings_fields[num_of_fields] = NULL;
 
     // Field settings
@@ -297,8 +297,8 @@ void gameSettings(int *letters, int *rounds) {
 				break;
 
 			case 10:  // Enter key
-                werase(msg_win);
 				curr_item_index = item_index(curr_item);
+                werase(msg_win);
                 
                 set_menu_mark(settings_menu, "  ");
                 wrefresh(settings_menu_win);
@@ -307,24 +307,24 @@ void gameSettings(int *letters, int *rounds) {
 					case 0:
                         /* Letters field */
 
-                        str_keys = take_field_input(curr_item_index, "Invalid! Letters are from 2 to 26.",
+                        field_str = take_field_input(curr_item_index, "Invalid! Letters are from 2 to 26.",
                                                     settings_menu_win,
                                                     settings_form, settings_fields,
                                                     rows, cols, num_of_items);
 
-                        change_settings(atoi(str_keys), 0); // Write the entered data to the settings file
+                        change_settings(atoi(field_str), 0); // Write the entered data to the settings file
 
 						break;
 
 					case 1:
 						/* Rounds field */
 
-                        str_keys = take_field_input(curr_item_index, "Invalid! Rounds are from 1 to 99.",
+                        field_str = take_field_input(curr_item_index, "Invalid! Rounds are from 1 to 99.",
                                                     settings_menu_win,
                                                     settings_form, settings_fields,
                                                     rows, cols, num_of_items);
 
-                        change_settings(0, atoi(str_keys)); // Write the entered data to the settings file
+                        change_settings(0, atoi(field_str)); // Write the entered data to the settings file
 
 						break;
 
