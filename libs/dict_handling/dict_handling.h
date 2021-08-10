@@ -21,6 +21,12 @@
 char *strfcpy(FILE *file);
 
 
+/*
+ * Remove all spaces from the given string.
+ */
+char *strrmspaces(char *str);
+
+
 /* --------------------------------------------------------------------------------------------- */
 /* Scrabble: dictionary and trie handling functions */
 

@@ -39,6 +39,27 @@ char *strfcpy(FILE *file) {
 /* --------------------------------------------------------------------------------------------- */
 
 
+char *strrmspaces(char *str) {
+
+    // remove all spaces in the front
+    while(isspace(*str)) str++;
+
+    if(*str == 0) return str;
+
+    // remove all spaces in the back
+    char *str_end = str + strlen(str) - 1;
+    while(str_end > str && isspace(*str_end)) str_end--;
+
+    // terminating null
+    *(str_end + 1) = '\0';
+
+    return str;
+}
+
+
+/* --------------------------------------------------------------------------------------------- */
+
+
 int addWordToDict() {
 
     // Open the dictionary for appending and reading
@@ -74,7 +95,7 @@ int addWordToDict() {
     for(int i = 0; i < strlen(word); i++) {
         word[i] = tolower(word[i]);
     }
-    word[46] = '\0';
+    word[45] = '\0';
 
 
     // Validation checks

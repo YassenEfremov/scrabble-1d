@@ -5,18 +5,21 @@
 
 
 /*
- * > Called by letter_generation
- * Enter a word and check if it's valid.
- * *will be changed*
+ * Check if the given word is valid.
+ * Returns:
+ * - Points if the word is valid
+ * - 0 if the word isn't in the dictionary.
+ * - (-1) if the word isn't composed of the available letters.
  */
-int enter_and_check(char rand_letters[], int letters, int* points);
+static int check_word(char *word, char rand_letters[]);
 
-/*
- * > Called by startGame
- * Function that generates random letters for one round and prints them.
- * *will be changed*
- */
-void letter_generation(int letters, int *points);
+/* Generate and array of random letters and return them. */
+static void get_rand_letters(char letters_array[], int letters);
+
+/* Refresh the settings menu screen. (use on resize of terminal) */
+static void refresh_game_win(int rows, int cols,
+							 WINDOW *game_win, WINDOW *rand_letters_win, WINDOW *input_win,
+							 int letters, int rounds, int r, int points);
 
 
 /* Scrabble: Start a game. */

@@ -4,6 +4,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <ctype.h>      // atoi
+#include <time.h>
 #include <glib.h>
 #include <ncurses.h>
 #include <menu.h>
@@ -81,11 +82,10 @@ static char *take_field_input(int fld_index, char *err_msg,
                               FORM *settings_form, FIELD **settings_fields, 
                               int rows, int cols, int num_of_items) {
 
-    int is_valid;
+    int is_valid = 0, to_refresh = 0;
     int key;
 
-    // THIS STRING IS NOT PROPERLY '\0' TERMINATED!                                                 // TO DO
-    char *field_str = field_buffer(settings_fields[fld_index], 0);   // read previous setting
+    char *field_str = field_buffer(settings_fields[fld_index], 0);   // set string buffer
     char field_save[3];     // save it to a string
     strcpy(field_save, field_str);
     
@@ -103,27 +103,30 @@ static char *take_field_input(int fld_index, char *err_msg,
         // Read input from the user
         do {
             key = getch();
+            if(to_refresh && key != KEY_RESIZE) {
+                wattron(settings_menu_win, A_UNDERLINE);
+                mvwprintw(settings_menu_win, fld_index, 11, "%s", field_str);
+                wattroff(settings_menu_win, A_UNDERLINE);
+                to_refresh = 0;
+            }
 
             switch(key) {
                 /* All possible actions in the field */
 
-                case KEY_BACKSPACE:  // delete from the field
+                // delete from the field
+                case KEY_BACKSPACE:
+                case '\b':
+                case 127:
+                    werase(msg_win);
                     form_driver(settings_form, REQ_DEL_CHAR);
                     form_driver(settings_form, REQ_PREV_CHAR);
                     break;
 
-                case 'q':  // exit the field
-                    if(is_valid != E_OK) strcpy(field_str, field_save);
-                    set_field_buffer(settings_fields[fld_index], 0, field_str);
-                    werase(msg_win);
-                    set_field_back(settings_fields[fld_index], A_NORMAL);
-                    wrefresh(settings_menu_win);
-                    return field_str;
-
                 case 10:  // Enter key (validate input)
                     form_driver(settings_form, REQ_VALIDATION);  // update field buffer
+                    field_str = field_buffer(settings_fields[fld_index], 0);    // get it's contents
 
-                    for(int i = 0; field_str[i] != '\0'; i++) {
+                    for(int i = 0; i < strlen(field_str); i++) {
                         if(field_str[i] == ' ') {
                             // if every char in the field is a space -> field isn't valid
                             is_valid = E_BAD_ARGUMENT;
@@ -138,23 +141,45 @@ static char *take_field_input(int fld_index, char *err_msg,
                         werase(msg_win);
                         message_log(err_msg);
                         wrefresh(msg_win);
+                        //mvprintw(0, 0, "!%s!", field_str);
+
+                        wattron(settings_menu_win, COLOR_PAIR(5));
+                        wattron(settings_menu_win, A_UNDERLINE);
+                        mvwprintw(settings_menu_win, fld_index, 11, "%s", field_str);
+                        wattroff(settings_menu_win, A_UNDERLINE);
+                        wattroff(settings_menu_win, COLOR_PAIR(5));
+                        to_refresh = 1;
                     }else {
-                        field_str = field_buffer(settings_fields[fld_index], 0);
+                        field_str = field_buffer(settings_fields[fld_index], 0);    // get the field contents
+                        //mvprintw(0, 0, "!%s!", field_str);
                     }
                     break;
+
+                case 'q':  // exit the field
+                    werase(msg_win);
+                    if(is_valid != E_OK) strcpy(field_str, field_save);
+                    set_field_buffer(settings_fields[fld_index], 0, field_str);
+                    set_field_back(settings_fields[fld_index], A_NORMAL);
+                    //mvprintw(0, 0, "!%s!", field_str);
+                    return field_str;
 
                 case KEY_RESIZE:  // on window resize
                     refresh_settings_menu(rows, cols, settings_menu_win, num_of_items);
                     break;
 
                 default:  // write to the field
-                    form_driver(settings_form, REQ_VALIDATION);     // update field buffer
+                    werase(msg_win);
+                    //form_driver(settings_form, REQ_VALIDATION);     // update field buffer
+                    //field_str = field_buffer(settings_fields[fld_index], 0);
                     // in an empty field the first char is always a space
-                    if(field_str[0] != ' ') form_driver(settings_form, REQ_NEXT_CHAR);
+                    //if(field_str[0] != ' ') form_driver(settings_form, REQ_NEXT_CHAR);
                     form_driver(settings_form, key);
                     break;
             }
+
+            // Refresh everything
             wrefresh(settings_menu_win);
+            wrefresh(msg_win);
 
         }while(key != 10);  // Enter key
 
@@ -230,7 +255,6 @@ void gameSettings(int *letters, int *rounds) {
 
     // Fields
     FIELD **settings_fields = (FIELD **)calloc(num_of_fields + 1, sizeof(FIELD *));
-
 	settings_fields[0] = new_field(1, 2, 0, 11, 0, 1);
     settings_fields[1] = new_field(1, 2, 1, 11, 0, 1);
 	settings_fields[num_of_fields] = NULL;
@@ -240,7 +264,9 @@ void gameSettings(int *letters, int *rounds) {
     set_field_type(settings_fields[1], TYPE_INTEGER, 0, 1, 99);
 
     field_opts_off(settings_fields[0], O_AUTOSKIP);
+    //field_opts_on(settings_fields[0], O_NULLOK);
     field_opts_off(settings_fields[1], O_AUTOSKIP);
+    //field_opts_off(settings_fields[1], O_NULLOK);
 
     // Form
 	FORM *settings_form = new_form(settings_fields);
@@ -282,23 +308,21 @@ void gameSettings(int *letters, int *rounds) {
 	do {
         key = getch();
 		curr_item = current_item(settings_menu);
+        werase(msg_win);
 
 		switch(key) {
             // Arrow keys
 
 			case KEY_DOWN:
-                werase(msg_win);
 				menu_driver(settings_menu, REQ_DOWN_ITEM);
 				break;
 
 			case KEY_UP:
-                werase(msg_win);
 				menu_driver(settings_menu, REQ_UP_ITEM);
 				break;
 
 			case 10:  // Enter key
 				curr_item_index = item_index(curr_item);
-                werase(msg_win);
                 
                 set_menu_mark(settings_menu, "  ");
                 wrefresh(settings_menu_win);

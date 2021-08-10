@@ -75,14 +75,16 @@ static void refresh_main_menu(int rows, int cols, WINDOW *main_menu_win, int num
 /* Public functions */
 
 
-int main(int argc, char *argv[]) {
+int main(int argc, const char *argv[]) {
 
 	// Program variables
 
 	int letters;
 	int rounds;
+	int to_clear = 1;
 
 	struct node_t *trie_root;
+
 
 	/* Start ncurses */
 
@@ -90,12 +92,18 @@ int main(int argc, char *argv[]) {
 	initscr();
 
 	// Colors
+	if(has_colors() == FALSE) {
+		endwin();
+		printf("Your terminal doesn't support colors!\n");
+		exit(EXIT_SUCCESS);
+	}
 	start_color();
 	init_pair(1, COLOR_GREEN, COLOR_BLACK);		// Menu title green
 	init_pair(2, COLOR_WHITE, COLOR_BLACK);		// Menu background
-	init_pair(3, COLOR_CYAN, COLOR_BLACK);	// Final round blue
-	init_pair(4, COLOR_YELLOW, COLOR_BLACK);		// Game over yellow
-	init_pair(99, COLOR_MAGENTA, COLOR_GREEN);	// For debugging
+	init_pair(3, COLOR_CYAN, COLOR_BLACK);		// Final round blue
+	init_pair(4, COLOR_YELLOW, COLOR_BLACK);	// Game over yellow
+	init_pair(5, COLOR_RED, COLOR_BLACK);		// Invalid input red
+	init_pair(99, COLOR_BLACK, COLOR_GREEN);	// For debugging
 
 	// Other settings
 	cbreak();//raw();
@@ -175,7 +183,6 @@ int main(int argc, char *argv[]) {
 	// Navigation guide message
 	char *nav_guide_msg = "(Use arrow keys to navigate)";
 	char *soon_msg = "Coming soon!";
-	message_log(nav_guide_msg);
 
 	// Line
 	//move(msg_win->_begy - 1, msg_win->_begx);
@@ -188,9 +195,7 @@ int main(int argc, char *argv[]) {
 	// Post the menu
 	post_menu(main_menu);
 
-   //mvprintw(0, 0, "PATH : %s\n", getenv("PATH"));
-   //mvprintw(1, 0, "HOME : %s\n", getenv("HOME"));
-   //mvprintw(2, 0, "ROOT : %s\n", getenv("ROOT"));
+	message_log(nav_guide_msg);
 
 	// Refresh everything
 	wrefresh(main_menu_win);
@@ -219,9 +224,9 @@ int main(int argc, char *argv[]) {
 				break;
 
 			case 10:  // Enter key
+				werase(msg_win);
 				curr_item_index = item_index(curr_item);
 				get_settings(&letters, &rounds);	// refresh settings
-				werase(msg_win);
 
 				switch(curr_item_index) {
 					// Select the current item
@@ -255,11 +260,10 @@ int main(int argc, char *argv[]) {
 						/* ------------ Exit the app ------------ */
 
 						exitMenu(&main_menu, &items, num_of_items);
-						curs_set(1);
-
 						delwin(title_win);
 						delwin(main_menu_win);
 						delwin(msg_win);
+
 						endwin();
 						exit(EXIT_SUCCESS);
 				}
