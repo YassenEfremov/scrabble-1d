@@ -39,21 +39,19 @@ char *strfcpy(FILE *file) {
 /* --------------------------------------------------------------------------------------------- */
 
 
-char *strrmspaces(char *str) {
+void strrmspaces(char **str) {
+
+    if(strcmp(*str, "") == 0) return;    // the given string is empty
 
     // remove all spaces in the front
-    while(isspace(*str)) str++;
-
-    if(*str == 0) return str;
+    while(isspace(**str)) (*str)++;
 
     // remove all spaces in the back
-    char *str_end = str + strlen(str) - 1;
-    while(str_end > str && isspace(*str_end)) str_end--;
+    char *str_end = *str + strlen(*str) - 1;
+    while(str_end > *str && isspace(*str_end)) str_end--;
 
     // terminating null
     *(str_end + 1) = '\0';
-
-    return str;
 }
 
 

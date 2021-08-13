@@ -46,23 +46,23 @@ static int get_settings(int *letters, int *rounds) {
 
 
 /* Refresh the main menu screen. (use on resize of terminal) */
-static void refresh_main_menu(int rows, int cols, WINDOW *main_menu_win, int num_of_items) {
+static void refresh_main_menu(WINDOW *main_menu_win, int num_of_items) {
 
 	endwin();
 	refresh();
 	clear();
-	getmaxyx(stdscr, rows, cols);	// get the new dimentions of the main screen
-	//printw("%d %d", rows/2 - num_of_items/2, cols/2 - 6);	
+	getmaxyx(stdscr, term_rows, term_cols);	// get the new dimentions of the main screen
+	//printw("%d %d", term_rows/2 - num_of_items/2, term_cols/2 - 6);	
 
 	// If the size of the terminal is smaller than [39, 5] everything glitches out!				// TO DO
-	mvwin(main_menu_win, rows/2 - num_of_items/2, cols/2 - 6);
-	mvwin(title_win, main_menu_win->_begy - 4 - 3, cols/2 - 19);
-	mvwin(msg_win, main_menu_win->_begy + num_of_items + 3, cols/2 - MSG_LEN/2);
+	mvwin(main_menu_win, term_rows/2 - num_of_items/2, term_cols/2 - 6);
+	mvwin(title_win, main_menu_win->_begy - 4 - 3, term_cols/2 - 19);
+	mvwin(msg_win, main_menu_win->_begy + num_of_items + 3, term_cols/2 - MSG_LEN/2);
 
 /*	WHEN THE SCREEN IS TOO SMALL SOME ELEMENTS DON'T APPEAR									// TO DO
-	if(rows < 18) {
-		mvwin(main_menu_win, rows/2 - num_of_items/2 + 18/rows, cols/2 - 6);
-		mvwin(title_win, main_menu_win->_begy - 4 - 3, cols/2 - 19);
+	if(term_rows < 18) {
+		mvwin(main_menu_win, term_rows/2 - num_of_items/2 + 18/term_rows, term_cols/2 - 6);
+		mvwin(title_win, main_menu_win->_begy - 4 - 3, term_cols/2 - 19);
 	}
 */
 	// Refresh the necessay elements
@@ -94,7 +94,7 @@ int main(int argc, const char *argv[]) {
 	// Colors
 	if(has_colors() == FALSE) {
 		endwin();
-		printf("Your terminal doesn't support colors!\n");
+		printf("Error: Your terminal doesn't support colors!\n");
 		exit(EXIT_SUCCESS);
 	}
 	start_color();
@@ -112,11 +112,10 @@ int main(int argc, const char *argv[]) {
 	curs_set(0);
 	refresh();
 
+	getmaxyx(stdscr, term_rows, term_cols);	// get the dimentions of the main screen
+
 
 	// Predefined data
-
-	int rows, cols;
-	getmaxyx(stdscr, rows, cols);	// get the dimentions of the main screen
 
 	char *items_list[] = {
 		"New Game",
@@ -142,7 +141,7 @@ int main(int argc, const char *argv[]) {
 	items[num_of_items] = NULL;
 
 	// Menu
-	WINDOW *main_menu_win = newwin(num_of_items, 12, rows/2 - num_of_items/2, cols/2 - 6);
+	WINDOW *main_menu_win = newwin(num_of_items, 12, term_rows/2 - num_of_items/2, term_cols/2 - 6);
 	MENU *main_menu = new_menu((ITEM **)items);
 	set_menu_win(main_menu, main_menu_win);
 	set_menu_sub(main_menu, main_menu_win);
@@ -156,7 +155,7 @@ int main(int argc, const char *argv[]) {
 	/* Title */
 
 	// Title window (defined globally!)
-	title_win = newwin(4, 38, main_menu_win->_begy - 4 - 3, cols/2 - 19);
+	title_win = newwin(4, 38, main_menu_win->_begy - 4 - 3, term_cols/2 - 19);
 
 	char *mtitle =
 		" ____ ____ ___    _  __  __   __  ____"
@@ -170,7 +169,7 @@ int main(int argc, const char *argv[]) {
 	wattron(title_win, COLOR_PAIR(1));
 	mvwaddstr(title_win, 0, 0, mtitle);	// centered
 	wattroff(title_win, COLOR_PAIR(1));
-	//mvaddstr(rows/3 + 1, cols/2 - strlen(mline)/2, mline);	// centered
+	//mvaddstr(term_rows/3 + 1, term_cols/2 - strlen(mline)/2, mline);	// centered
 	wattroff(title_win, A_BOLD);
 
 
@@ -178,7 +177,7 @@ int main(int argc, const char *argv[]) {
 	/* Message window */
 
 	// This window is used to display messages in-game (defined globally!)
-	msg_win = newwin(1, MSG_LEN, main_menu_win->_begy + num_of_items + 3, cols/2 - MSG_LEN/2);
+	msg_win = newwin(1, MSG_LEN, main_menu_win->_begy + num_of_items + 3, term_cols/2 - MSG_LEN/2);
 
 	// Navigation guide message
 	char *nav_guide_msg = "(Use arrow keys to navigate)";
@@ -275,7 +274,7 @@ int main(int argc, const char *argv[]) {
 
 			case KEY_RESIZE:
 				// On window resize
-				refresh_main_menu(rows, cols, main_menu_win, num_of_items);
+				refresh_main_menu(main_menu_win, num_of_items);
 				break;
 		}
 

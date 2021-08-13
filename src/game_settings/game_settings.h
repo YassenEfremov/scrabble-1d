@@ -4,6 +4,10 @@
 /* ============================================================================================= */
 
 
+/* The length of a setting field. */
+#define FLD_LEN 2
+
+
 /*
  * Change the number of letters and rounds.
  * If 0 is passed to either option it isn't changed.
@@ -15,9 +19,8 @@ static void refresh_settings_menu(int rows, int cols, WINDOW *settings_menu_win,
 
 /* Take and vaidate input using the settings form fields. */
 static char *take_field_input(int opt_index, char *err_msg,
-                              WINDOW *settings_menu_win,
-                              FORM *settings_form, FIELD **settings_fields, 
-                              int rows, int cols, int num_of_items);
+                              WINDOW *settings_menu_win, FORM *settings_form, FIELD **settings_fields, 
+                              int num_of_items);
 
 
 /* Scrabble: Open the game settings. */

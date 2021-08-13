@@ -4,12 +4,12 @@
 #include <stdlib.h>
 #include <string.h>
 #include <ctype.h>      // atoi
-#include <time.h>
 #include <glib.h>
 #include <ncurses.h>
 #include <menu.h>
 #include <form.h>
 
+#include "libs/dict_handling/dict_handling.h"
 #include "libs/ui_util/ui_util.h"
 
 #include "game_settings.h"
@@ -48,29 +48,30 @@ static int change_settings(int new_letters, int new_rounds) {
 /* --------------------------------------------------------------------------------------------- */
 
 
-static void refresh_settings_menu(int rows, int cols, WINDOW *settings_menu_win, int num_of_items) {
+static void refresh_settings_menu(int term_rows, int term_cols, WINDOW *settings_menu_win, int num_of_items) {
 
 	endwin();
 	refresh();
 	clear();
-	getmaxyx(stdscr, rows, cols);	// get the new dimentions of the main screen
+	getmaxyx(stdscr, term_rows, term_cols);	// get the new dimentions of the main screen
 
 	// If the size of the terminal is smaller than (39, 5) everything glitches out!				// TO DO
-	mvwin(settings_menu_win, rows/2 - num_of_items/2, cols/2 - 6);
+	mvwin(settings_menu_win, term_rows/2 - num_of_items/2, term_cols/2 - 6);
     attron(A_UNDERLINE);
     attron(A_BOLD);
-    mvprintw(settings_menu_win->_begy - 2, cols/2 - 4, "Settings");
+    mvprintw(settings_menu_win->_begy - 2, term_cols/2 - 4, "Settings");
     attroff(A_BOLD);
     attroff(A_UNDERLINE);
 
-	mvwin(title_win, settings_menu_win->_begy - 4 - 4, cols/2 - 19);
-	mvwin(msg_win, settings_menu_win->_begy + num_of_items + 3, cols/2 - MSG_LEN/2);
+	mvwin(title_win, settings_menu_win->_begy - 4 - 4, term_cols/2 - 19);
+	mvwin(msg_win, settings_menu_win->_begy + num_of_items + 3, term_cols/2 - MSG_LEN/2);
 
     // WHEN THE SCREEN IS TOO SMALL SOME ELEMENTS DISAPPEAR										// TO DO
 
 	// Refresh the necessay elements
 	refresh();
 	wrefresh(title_win);
+    wrefresh(msg_win);
 }
 
 
@@ -78,112 +79,108 @@ static void refresh_settings_menu(int rows, int cols, WINDOW *settings_menu_win,
 
 
 static char *take_field_input(int fld_index, char *err_msg,
-                              WINDOW *settings_menu_win,
-                              FORM *settings_form, FIELD **settings_fields, 
-                              int rows, int cols, int num_of_items) {
+                              WINDOW *settings_menu_win, FORM *settings_form, FIELD **settings_fields, 
+                              int num_of_items) {
 
-    int is_valid = 0, to_refresh = 0;
     int key;
+    char first_num = '0';   // usefull so you can't type 0 in as the first number
+    int is_valid = 0, to_refresh = 0;
 
-    char *field_str = field_buffer(settings_fields[fld_index], 0);   // set string buffer
-    char field_save[3];     // save it to a string
-    strcpy(field_save, field_str);
-    
+    char *field_str = field_buffer(settings_fields[fld_index], 0);   // get the field string
+                                                                     // THIS IS NOT STABLE ON SOME SYSTEMS!!
+                                                                     // > USE FIELD_SAVE INSTEAD!!!
+    strrmspaces(&field_str);    // remove spaces (also adds '\0')
+    set_field_buffer(settings_fields[fld_index], 1, field_str);     // save the old string in the additional field
+
+    char field_save[FLD_LEN + 1];
+    strcpy(field_save, field_str);  // save the field string for later
+
 
     set_field_back(settings_fields[fld_index], A_UNDERLINE);
 
-    // Input and validation
+    // Move to the correct field and posiotion
+    form_driver(settings_form, REQ_FIRST_FIELD);
+    for(int i = 0; i < fld_index; i++) form_driver(settings_form, REQ_NEXT_FIELD);    // move to specified field
+    for(int i = 0; field_save[i+1] != '\0'; i++) form_driver(settings_form, REQ_NEXT_CHAR); // move to end of word
+    wrefresh(settings_menu_win);
+
+    // Read input from the user
     do {
-        // Move to the correct field and posiotion
-        form_driver(settings_form, REQ_FIRST_FIELD);
-        for(int i = 0; i < fld_index; i++) form_driver(settings_form, REQ_NEXT_FIELD);    // move to specified field
-        for(int i = 0; field_str[i+1] != ' ' && i != strlen(field_str); i++) form_driver(settings_form, REQ_NEXT_CHAR); // move to end of word
+        key = getch();
+        if(to_refresh && key != KEY_RESIZE) {
+            wattron(settings_menu_win, A_UNDERLINE);
+            mvwprintw(settings_menu_win, fld_index, 11, "%s", field_save);
+            wattroff(settings_menu_win, A_UNDERLINE);
+            to_refresh = 0;
+        }
+
+        switch(key) {
+            /* All possible actions in the field */
+
+            case KEY_BACKSPACE: // Delete from the field (handle all backspace chars)
+            case '\b':
+            case 127:
+                werase(msg_win);
+                form_driver(settings_form, REQ_DEL_CHAR);
+                form_driver(settings_form, REQ_PREV_CHAR);
+                break;
+
+            case 10:  // Enter key (validate input)
+                is_valid = form_driver(settings_form, REQ_VALIDATION);  // update field buffer
+                field_str = field_buffer(settings_fields[fld_index], 0);    // get field string
+                strrmspaces(&field_str);	// remove spaces (also adds '\0')
+                if(strcmp(field_str, "") == 0) is_valid = E_BAD_ARGUMENT;   // nothing was typed (string is empty)
+
+                // Handle invalid input
+                if(is_valid != E_OK) {
+                    werase(msg_win);
+                    message_log(err_msg);
+                    wrefresh(msg_win);
+
+                    field_str = field_buffer(settings_fields[fld_index], 0);    // get because of spaces when printig
+                    strcpy(field_save, field_str);
+
+                    wattron(settings_menu_win, COLOR_PAIR(5));
+                    wattron(settings_menu_win, A_UNDERLINE);
+                    mvwprintw(settings_menu_win, fld_index, 11, "%s", field_save);
+                    wattroff(settings_menu_win, A_UNDERLINE);
+                    wattroff(settings_menu_win, COLOR_PAIR(5));
+                    to_refresh = 1;
+
+                }
+                break;
+
+            case 'q':  // exit the field
+                werase(msg_win);
+                field_str = field_buffer(settings_fields[fld_index], 1);    // get the old field string
+                set_field_buffer(settings_fields[fld_index], 0, field_str);
+                set_field_back(settings_fields[fld_index], A_NORMAL);
+                return field_str;
+
+            case KEY_RESIZE:  // on window resize
+                refresh_settings_menu(term_rows, term_cols, settings_menu_win, num_of_items);
+                break;
+
+            default:  // write to the field
+                werase(msg_win);
+                form_driver(settings_form, REQ_VALIDATION);     // update field buffer
+                field_str = field_buffer(settings_fields[fld_index], 0);    // update field string
+                //in an empty field the first char is always a space
+                if(field_str[0] != ' ') {
+                    form_driver(settings_form, REQ_NEXT_CHAR);
+                    first_num = '0';
+                }else {
+                    first_num = '1';
+                }
+                if(key >= first_num && key <= '9') form_driver(settings_form, key);     // this check is sometimes needed
+                break;
+        }
+
+        // Refresh everything
         wrefresh(settings_menu_win);
+        //wrefresh(msg_win);
 
-        // Read input from the user
-        do {
-            key = getch();
-            if(to_refresh && key != KEY_RESIZE) {
-                wattron(settings_menu_win, A_UNDERLINE);
-                mvwprintw(settings_menu_win, fld_index, 11, "%s", field_str);
-                wattroff(settings_menu_win, A_UNDERLINE);
-                to_refresh = 0;
-            }
-
-            switch(key) {
-                /* All possible actions in the field */
-
-                // delete from the field
-                case KEY_BACKSPACE:
-                case '\b':
-                case 127:
-                    werase(msg_win);
-                    form_driver(settings_form, REQ_DEL_CHAR);
-                    form_driver(settings_form, REQ_PREV_CHAR);
-                    break;
-
-                case 10:  // Enter key (validate input)
-                    form_driver(settings_form, REQ_VALIDATION);  // update field buffer
-                    field_str = field_buffer(settings_fields[fld_index], 0);    // get it's contents
-
-                    for(int i = 0; i < strlen(field_str); i++) {
-                        if(field_str[i] == ' ') {
-                            // if every char in the field is a space -> field isn't valid
-                            is_valid = E_BAD_ARGUMENT;
-                        }else {
-                            // if the field isn't entirely spaces -> validate the actual data in it
-                            is_valid = form_driver(settings_form, REQ_VALIDATION);
-                            break;
-                        }
-                    }
-
-                    if(is_valid != E_OK) {
-                        werase(msg_win);
-                        message_log(err_msg);
-                        wrefresh(msg_win);
-                        //mvprintw(0, 0, "!%s!", field_str);
-
-                        wattron(settings_menu_win, COLOR_PAIR(5));
-                        wattron(settings_menu_win, A_UNDERLINE);
-                        mvwprintw(settings_menu_win, fld_index, 11, "%s", field_str);
-                        wattroff(settings_menu_win, A_UNDERLINE);
-                        wattroff(settings_menu_win, COLOR_PAIR(5));
-                        to_refresh = 1;
-                    }else {
-                        field_str = field_buffer(settings_fields[fld_index], 0);    // get the field contents
-                        //mvprintw(0, 0, "!%s!", field_str);
-                    }
-                    break;
-
-                case 'q':  // exit the field
-                    werase(msg_win);
-                    if(is_valid != E_OK) strcpy(field_str, field_save);
-                    set_field_buffer(settings_fields[fld_index], 0, field_str);
-                    set_field_back(settings_fields[fld_index], A_NORMAL);
-                    //mvprintw(0, 0, "!%s!", field_str);
-                    return field_str;
-
-                case KEY_RESIZE:  // on window resize
-                    refresh_settings_menu(rows, cols, settings_menu_win, num_of_items);
-                    break;
-
-                default:  // write to the field
-                    werase(msg_win);
-                    //form_driver(settings_form, REQ_VALIDATION);     // update field buffer
-                    //field_str = field_buffer(settings_fields[fld_index], 0);
-                    // in an empty field the first char is always a space
-                    //if(field_str[0] != ' ') form_driver(settings_form, REQ_NEXT_CHAR);
-                    form_driver(settings_form, key);
-                    break;
-            }
-
-            // Refresh everything
-            wrefresh(settings_menu_win);
-            wrefresh(msg_win);
-
-        }while(key != 10);  // Enter key
-
-    }while(is_valid != E_OK);
+    }while(key != 10 || is_valid != E_OK);  // Enter key
 
     werase(msg_win);
     set_field_back(settings_fields[fld_index], A_NORMAL);
@@ -200,6 +197,8 @@ static char *take_field_input(int fld_index, char *err_msg,
 void gameSettings(int *letters, int *rounds) {
 
     refresh();
+	getmaxyx(stdscr, term_rows, term_cols);	// get the dimentions of the main screen
+
 
     // Settings variables
 
@@ -207,9 +206,6 @@ void gameSettings(int *letters, int *rounds) {
 
 
     // Predefined data
-
-    int rows, cols;
-	getmaxyx(stdscr, rows, cols);	// get the dimentions of the main screen
 
     char *items_list[] = {
 		"Letters:",
@@ -240,7 +236,7 @@ void gameSettings(int *letters, int *rounds) {
     items[num_of_items] = NULL;
 
     // Menu
-	WINDOW *settings_menu_win = newwin(num_of_items, 14, rows/2 - num_of_items/2, cols/2 - 7);
+	WINDOW *settings_menu_win = newwin(num_of_items, 14, term_rows/2 - num_of_items/2, term_cols/2 - 7);
 	MENU *settings_menu = new_menu((ITEM **)items);
 	set_menu_win(settings_menu, settings_menu_win);
     set_menu_sub(settings_menu, settings_menu_win);
@@ -255,18 +251,16 @@ void gameSettings(int *letters, int *rounds) {
 
     // Fields
     FIELD **settings_fields = (FIELD **)calloc(num_of_fields + 1, sizeof(FIELD *));
-	settings_fields[0] = new_field(1, 2, 0, 11, 0, 1);
-    settings_fields[1] = new_field(1, 2, 1, 11, 0, 1);
+	settings_fields[0] = new_field(1, FLD_LEN, 0, 11, 0, 1);
+    settings_fields[1] = new_field(1, FLD_LEN, 1, 11, 0, 1);
 	settings_fields[num_of_fields] = NULL;
 
     // Field settings
-    set_field_type(settings_fields[0], TYPE_INTEGER, 0, 2, 26);
-    set_field_type(settings_fields[1], TYPE_INTEGER, 0, 1, 99);
+    set_field_type(settings_fields[0], TYPE_INTEGER, 0, 2, 26);     // SOMETIMES DOESN'T WORK
+    set_field_type(settings_fields[1], TYPE_INTEGER, 0, 1, 99);     // SOMETIMES DOESN'T WORK
 
     field_opts_off(settings_fields[0], O_AUTOSKIP);
-    //field_opts_on(settings_fields[0], O_NULLOK);
     field_opts_off(settings_fields[1], O_AUTOSKIP);
-    //field_opts_off(settings_fields[1], O_NULLOK);
 
     // Form
 	FORM *settings_form = new_form(settings_fields);
@@ -282,7 +276,7 @@ void gameSettings(int *letters, int *rounds) {
     // Print menu title
     attron(A_UNDERLINE);
     attron(A_BOLD);
-    mvprintw(settings_menu_win->_begy - 2, cols/2 - 4, "Settings");
+    mvprintw(settings_menu_win->_begy - 2, term_cols/2 - 4, "Settings");
     attroff(A_BOLD);
     attroff(A_UNDERLINE);
 
@@ -300,7 +294,6 @@ void gameSettings(int *letters, int *rounds) {
     // Refresh everything
     wrefresh(settings_menu_win);
     wrefresh(msg_win);
-
 	
     /* ----------------------------------------------------------------------------------------- */
 	/* Navigation */
@@ -330,13 +323,12 @@ void gameSettings(int *letters, int *rounds) {
 				switch(curr_item_index) {
 					case 0:
                         /* Letters field */
-
                         field_str = take_field_input(curr_item_index, "Invalid! Letters are from 2 to 26.",
-                                                    settings_menu_win,
-                                                    settings_form, settings_fields,
-                                                    rows, cols, num_of_items);
+                                                    settings_menu_win, settings_form, settings_fields,
+                                                    num_of_items);
 
-                        change_settings(atoi(field_str), 0); // Write the entered data to the settings file
+                        // Change the settings in the file (only if they have changed!)
+                        if(atoi(field_str) != *letters) change_settings(atoi(field_str), 0);
 
 						break;
 
@@ -344,11 +336,11 @@ void gameSettings(int *letters, int *rounds) {
 						/* Rounds field */
 
                         field_str = take_field_input(curr_item_index, "Invalid! Rounds are from 1 to 99.",
-                                                    settings_menu_win,
-                                                    settings_form, settings_fields,
-                                                    rows, cols, num_of_items);
+                                                    settings_menu_win, settings_form, settings_fields,
+                                                    num_of_items);
 
-                        change_settings(0, atoi(field_str)); // Write the entered data to the settings file
+                        // Change the settings in the file (only if they have changed!)
+                        if(atoi(field_str) != *rounds) change_settings(0, atoi(field_str));
 
 						break;
 
@@ -364,7 +356,7 @@ void gameSettings(int *letters, int *rounds) {
 
             case KEY_RESIZE:
 				// On window resize
-                refresh_settings_menu(rows, cols, settings_menu_win, num_of_items);
+                refresh_settings_menu(term_rows, term_cols, settings_menu_win, num_of_items);
                 break;
 		}
         set_menu_mark(settings_menu, "> ");

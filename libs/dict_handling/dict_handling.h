@@ -23,8 +23,9 @@ char *strfcpy(FILE *file);
 
 /*
  * Remove all spaces from the given string.
+ * Note: ADDRESS of string (char pointer) must be given as an argument!
  */
-char *strrmspaces(char *str);
+void strrmspaces(char **str);
 
 
 /* --------------------------------------------------------------------------------------------- */

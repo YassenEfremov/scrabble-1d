@@ -24,6 +24,10 @@
 /* Global variables */
 
 
+/* Global teriminal rows and columns */
+extern int term_rows, term_cols;
+
+
 /* Global message window. */
 extern WINDOW *msg_win;
 /* Global title window. */
