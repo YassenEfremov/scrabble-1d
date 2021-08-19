@@ -11,6 +11,7 @@
 
 #include "game_logic/game_logic.h"
 #include "game_settings/game_settings.h"
+#include "add_new_word/add_new_word.h"
 
 
 /* ============================================================================================= */
@@ -29,7 +30,7 @@ static int get_settings(int *letters, int *rounds) {
 
 	// Open config file and catch any errors			TEMPORARY LOCATION
     if(!g_key_file_load_from_file(game_settings, "../config/game_settings.cfg", conf_flags, &conf_error)) {
-    	g_error("%s", conf_error->message);
+    	//g_error("%s", conf_error->message);
       	return 2;
     }
 
@@ -77,15 +78,6 @@ static void refresh_main_menu(WINDOW *main_menu_win, int num_of_items) {
 
 int main(int argc, const char *argv[]) {
 
-	// Program variables
-
-	int letters;
-	int rounds;
-	int to_clear = 1;
-
-	struct node_t *trie_root;
-
-
 	/* Start ncurses */
 
 	// Start main window
@@ -112,10 +104,13 @@ int main(int argc, const char *argv[]) {
 	curs_set(0);
 	refresh();
 
-	getmaxyx(stdscr, term_rows, term_cols);	// get the dimentions of the main screen
+	getmaxyx(stdscr, term_rows, term_cols);	// get the dimentions of the terminal
 
 
-	// Predefined data
+	// Variables
+
+	int letters;
+	int rounds;
 
 	char *items_list[] = {
 		"New Game",
@@ -125,8 +120,8 @@ int main(int argc, const char *argv[]) {
 	};
 	int num_of_items = sizeof(items_list)/sizeof(items_list[0]);
 
-	ITEM *curr_item;
 	int key;
+	ITEM *curr_item;
 	int curr_item_index;
 
 
@@ -225,13 +220,16 @@ int main(int argc, const char *argv[]) {
 			case 10:  // Enter key
 				werase(msg_win);
 				curr_item_index = item_index(curr_item);
-				get_settings(&letters, &rounds);	// refresh settings
 
 				switch(curr_item_index) {
-					// Select the current item
 
 					case 0:
 						/* ------------- Start game ------------- */
+
+						if(get_settings(&letters, &rounds)) {	// refresh game settings
+							message_log("Error: Game config file missing!");
+							break;
+						}
 
 						unpost_menu(main_menu);  		  // hide the main menu
 						wrefresh(main_menu_win);
@@ -242,6 +240,11 @@ int main(int argc, const char *argv[]) {
 					case 1:
 						/* --------- Open game settings --------- */
 
+						if(get_settings(&letters, &rounds)) {	// refresh game settings
+							message_log("Error: Game config file missing!");
+							break;
+						}
+
 						unpost_menu(main_menu);  		  // hide the main menu
 						wrefresh(main_menu_win);
 						gameSettings(&letters, &rounds);
@@ -251,8 +254,10 @@ int main(int argc, const char *argv[]) {
 					case 2:
 						/* ---- Add a word to the dictionary ---- */
 
-						//addWordToDict();
-						message_log(soon_msg);
+						unpost_menu(main_menu);  		  // hide the main menu
+						wrefresh(main_menu_win);
+						addNewWord();
+						post_menu(main_menu);  			  // unhide the main menu
 						break;
 
 					case 3:
@@ -267,7 +272,7 @@ int main(int argc, const char *argv[]) {
 						exit(EXIT_SUCCESS);
 				}
 
-				/*
+				/* NOTE:
 				 * The break statemant is omitted here because we want to refresh everything
 				 * after we have returned from the selected action (but NOT after we have used the arrow keys!)
 				 */

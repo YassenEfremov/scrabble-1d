@@ -37,6 +37,7 @@ AC_CONFIG_FILES([Makefile
                  libs/dict_handling/Makefile
                  libs/ui_util/Makefile
                  src/Makefile
+                 src/add_new_word/Makefile
                  src/game_logic/Makefile
                  src/game_settings/Makefile])
 AC_OUTPUT

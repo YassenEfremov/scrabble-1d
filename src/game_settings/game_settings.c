@@ -48,7 +48,7 @@ static int change_settings(int new_letters, int new_rounds) {
 /* --------------------------------------------------------------------------------------------- */
 
 
-static void refresh_settings_menu(int term_rows, int term_cols, WINDOW *settings_menu_win, int num_of_items) {
+static void refresh_settings_menu(WINDOW *settings_menu_win, int num_of_items) {
 
 	endwin();
 	refresh();
@@ -138,6 +138,7 @@ static char *take_field_input(int fld_index, char *err_msg,
                     wrefresh(msg_win);
 
                     field_str = field_buffer(settings_fields[fld_index], 0);    // get because of spaces when printig
+                    if(atoi(field_str) < 10) field_str[1] = ' ';    // NEEDED ON SOME SYSTEMS!
                     strcpy(field_save, field_str);
 
                     wattron(settings_menu_win, COLOR_PAIR(5));
@@ -158,7 +159,7 @@ static char *take_field_input(int fld_index, char *err_msg,
                 return field_str;
 
             case KEY_RESIZE:  // on window resize
-                refresh_settings_menu(term_rows, term_cols, settings_menu_win, num_of_items);
+                refresh_settings_menu(settings_menu_win, num_of_items);
                 break;
 
             default:  // write to the field
@@ -197,15 +198,12 @@ static char *take_field_input(int fld_index, char *err_msg,
 void gameSettings(int *letters, int *rounds) {
 
     refresh();
-	getmaxyx(stdscr, term_rows, term_cols);	// get the dimentions of the main screen
+	getmaxyx(stdscr, term_rows, term_cols);	// get the dimentions of the terminal
 
 
-    // Settings variables
+    // Variables
 
     char *field_str;
-
-
-    // Predefined data
 
     char *items_list[] = {
 		"Letters:",
@@ -213,12 +211,11 @@ void gameSettings(int *letters, int *rounds) {
 		"Back"
 	};
     int num_of_items = sizeof(items_list)/sizeof(items_list[0]);
-    int num_of_fields = 2;
-
-	ITEM *curr_item;
-	int curr_item_index;
+    int fld_count = 2;
 
 	int key;
+	ITEM *curr_item;
+	int curr_item_index;
 
     // Used for writing to the field buffer
     char str_letters[3];
@@ -250,10 +247,10 @@ void gameSettings(int *letters, int *rounds) {
     /* Settings form */
 
     // Fields
-    FIELD **settings_fields = (FIELD **)calloc(num_of_fields + 1, sizeof(FIELD *));
+    FIELD **settings_fields = (FIELD **)calloc(fld_count + 1, sizeof(FIELD *));
 	settings_fields[0] = new_field(1, FLD_LEN, 0, 11, 0, 1);
     settings_fields[1] = new_field(1, FLD_LEN, 1, 11, 0, 1);
-	settings_fields[num_of_fields] = NULL;
+	settings_fields[fld_count] = NULL;
 
     // Field settings
     set_field_type(settings_fields[0], TYPE_INTEGER, 0, 2, 26);     // SOMETIMES DOESN'T WORK
@@ -321,8 +318,10 @@ void gameSettings(int *letters, int *rounds) {
                 wrefresh(settings_menu_win);
 
 				switch(curr_item_index) {
+
 					case 0:
                         /* Letters field */
+
                         field_str = take_field_input(curr_item_index, "Invalid! Letters are from 2 to 26.",
                                                     settings_menu_win, settings_form, settings_fields,
                                                     num_of_items);
@@ -346,9 +345,8 @@ void gameSettings(int *letters, int *rounds) {
 
 					case 2:
                         // Exit settings menu
-                        exitForm(&settings_form, &settings_fields, num_of_fields);
+                        exitForm(&settings_form, &settings_fields, fld_count);
                         exitMenu(&settings_menu, &items, num_of_items);
-                        wrefresh(settings_menu_win);
                         delwin(settings_menu_win);
                         return;
 				}
@@ -356,7 +354,7 @@ void gameSettings(int *letters, int *rounds) {
 
             case KEY_RESIZE:
 				// On window resize
-                refresh_settings_menu(term_rows, term_cols, settings_menu_win, num_of_items);
+                refresh_settings_menu(settings_menu_win, num_of_items);
                 break;
 		}
         set_menu_mark(settings_menu, "> ");

@@ -4,7 +4,6 @@
 #include <stdlib.h>
 #include <string.h>
 #include <time.h>
-#include <ctype.h>		// atoi
 #include <ncurses.h>
 #include <menu.h>
 #include <form.h>
@@ -91,18 +90,18 @@ static void refresh_game_win(WINDOW *game_win, WINDOW *rand_letters_win, WINDOW 
 	clear();
 	getmaxyx(stdscr, term_rows, term_cols);	// get the new dimentions of the main screen
 
+	// This comes first because the title depends on it
+	werase(game_win);
+	wresize(game_win, 0.8 * term_rows, 0.8 * term_cols);
+	mvwin(game_win, 0.1 * term_rows, 0.1 * term_cols);
+	box(game_win, 0, 0);
+
 	// If the size of the terminal is smaller than (39, 5) everything glitches out!				// TO DO
 	attron(COLOR_PAIR(1));
 	attron(A_BOLD);
 	mvaddstr(game_win->_begy - 1, game_win->_begx + getmaxx(game_win)/2 - 4, "SCRABBLE");
 	attroff(A_BOLD);
 	attroff(COLOR_PAIR(1));
-
-	werase(game_win);
-	wresize(game_win, 0.8 * term_rows, 0.8 * term_cols);
-	mvwin(game_win, 0.8 * term_rows, 0.8 * term_cols);
-	box(game_win, 0, 0);
-
 
 	if(r == rounds) {
 		// Game has ended -> display ending screen
@@ -124,12 +123,12 @@ static void refresh_game_win(WINDOW *game_win, WINDOW *rand_letters_win, WINDOW 
 		werase(msg_win);
 		return;
 	}
-
 	
+
 	wattron(game_win, A_BOLD);
 
 	// Print current round
-	mvwprintw(game_win, 1, 1, "Round #%d", r+1);
+	mvwprintw(game_win, 1, 2, "Round %d / %d", r+1, rounds);
 	if(r + 1 == rounds) {
 		// Last round
 		wattron(game_win, COLOR_PAIR(3));
@@ -142,6 +141,8 @@ static void refresh_game_win(WINDOW *game_win, WINDOW *rand_letters_win, WINDOW 
 
 	wattroff(game_win, A_BOLD);
 
+
+	mvwin(input_win, rand_letters_win->_begy + 5, game_win->_begx + (getmaxx(game_win) - INPUT_FLD_LEN)/2);	
 
 	mvwin(rand_letters_win,
 		  game_win->_begy + getmaxy(game_win)/3,								 // y position
@@ -163,24 +164,21 @@ static void refresh_game_win(WINDOW *game_win, WINDOW *rand_letters_win, WINDOW 
 
 void startGame(int letters, int rounds) {
 
-	erase();
+	clear();
 	refresh();
-	getmaxyx(stdscr, term_rows, term_cols);	// get the dimentions of the main screen
+	getmaxyx(stdscr, term_rows, term_cols);	// get the dimentions of the terminal
 
 
-	// Game variables
+	// Variables
 
 	int points = 0;			// total game points
 	int word_points = 0;	// points per word
 
 	char rand_letters[letters];
 	char *input_str = NULL;
+    int fld_count = 1;
+
 	int is_valid;
-
-
-	// Predefined data
-
-    int num_of_fields = 1;
 	int key;
 
 
@@ -195,7 +193,8 @@ void startGame(int letters, int rounds) {
 									  game_win->_begy + getmaxy(game_win)/3,								 // y position
 									  game_win->_begx + (getmaxx(game_win) - (letters + (letters - 1)))/2);	 // x position
 	// Input window
-	WINDOW *input_win = newwin(1, getmaxx(game_win) - 2, rand_letters_win->_begy + 5, game_win->_begx + 1);
+	WINDOW *input_win = newwin(1, INPUT_FLD_LEN,
+							   rand_letters_win->_begy + 5, game_win->_begx + (getmaxx(game_win) - INPUT_FLD_LEN)/2);
 
 	box(game_win, 0, 0);
 
@@ -204,13 +203,13 @@ void startGame(int letters, int rounds) {
 	/* Input form */
 
     // Fields (only 1)
-    FIELD **input_field = (FIELD **)calloc(num_of_fields + 1, sizeof(FIELD *));
-	input_field[0] = new_field(1, getmaxx(game_win) - 2, 0, 0, 0, 1);
-	input_field[num_of_fields] = NULL;
+    FIELD **input_field = (FIELD **)calloc(fld_count + 1, sizeof(FIELD *));
+	input_field[0] = new_field(1, INPUT_FLD_LEN, 0, 0, 0, 1);
+	input_field[fld_count] = NULL;
 
     // Field settings
     set_field_type(input_field[0], TYPE_ALPHA, 2);		// SOMETIMES DOESN'T WORK
-	field_opts_off(input_field[0], O_AUTOSKIP);			// SOMETIMES DOESN'T WORK
+	field_opts_off(input_field[0], O_AUTOSKIP);
 	set_field_just(input_field[0], JUSTIFY_CENTER);		// SOMETIMES DOESN'T WORK
 
     // Form
@@ -249,7 +248,7 @@ void startGame(int letters, int rounds) {
 		wattron(game_win, A_BOLD);
 
 		// Print current round
-		mvwprintw(game_win, 1, 1, "Round #%d", r+1);
+		mvwprintw(game_win, 1, 2, "Round %d / %d", r+1, rounds);
 		if(r + 1 == rounds) {
 			// Last round
 			wattron(game_win, COLOR_PAIR(3));
@@ -283,7 +282,6 @@ void startGame(int letters, int rounds) {
 		do {
 			key = getch();
 			
-
 			switch(key) {
 				/* All possible actions in the field */
 
@@ -305,10 +303,11 @@ void startGame(int letters, int rounds) {
 					form_driver(input_form, REQ_VALIDATION);  // update field buffer
 					input_str = field_buffer(input_field[0], 0);	// get the field string
 					strrmspaces(&input_str);	// remove spaces from the string (only back and front)
-					//mvprintw(0, 0, "!%s!", input_str);
+
 
 					// Check if the word is valid and give points accordingly
 					word_points = check_word(input_str, rand_letters);
+
 					switch(word_points) {
 						case -2:
 							is_valid = 0;
@@ -343,7 +342,13 @@ void startGame(int letters, int rounds) {
 
 				case ' ':  // Space key: skip the round
 					werase(msg_win);
-					message_log("Round skipped >>");
+					message_log("* Press SPACE again to confirm *");
+					wrefresh(msg_win);
+					if(getch() == ' ') {
+						// press space again
+						werase(msg_win);
+						message_log("Round skipped >>");
+					}
 					break;
 
                 case KEY_RESIZE:  // on window resize
@@ -385,12 +390,12 @@ void startGame(int letters, int rounds) {
 	wrefresh(game_win);
 	werase(msg_win);
 	while(getch() != 10) {
-		// refresh until enter key is pressed
+		// only refresh until enter key is pressed
 		refresh_game_win(game_win, rand_letters_win, input_win, letters, rounds, rounds, points);
 	}
 
 
-	exitForm(&input_form, &input_field, num_of_fields);
+	exitForm(&input_form, &input_field, fld_count);
 	delwin(input_win);
 	delwin(rand_letters_win);
 	delwin(game_win);

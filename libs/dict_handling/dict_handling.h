@@ -33,13 +33,6 @@ void strrmspaces(char **str);
 
 
 /*
- * Scrabble: Add a new word to the dictionary file.
- * - returns 0 on success
- */
-int addWordToDict();
-
-
-/*
  * > Called by dictToTrie:
  * Create a trie structure from the given string.
  */
@@ -60,6 +53,8 @@ int trieToJson(struct node_t *trie_root);
  * Check if the given word is in the json trie.
  * - return 1 if it is
  * - return 0 if it isn't
+ * 
+ * Note: return -1 if the word is shorter than 2 letters.
  */
 int checkTrie(char *word);
 

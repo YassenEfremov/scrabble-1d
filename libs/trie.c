@@ -3,6 +3,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <glib.h>
 
 #include "trie.h"
 
@@ -12,7 +13,7 @@
 
 struct node_t *trie_create_node() {
 
-    struct node_t *new_node = (struct node_t *)malloc(sizeof(struct node_t));;
+    struct node_t *new_node = (struct node_t *)g_malloc(sizeof(struct node_t));;
     
     for(int i = 0; i < 26; i++) new_node->children[i] = NULL;
     new_node->isEndOfWord = 0;
@@ -67,6 +68,7 @@ int check_trie_temp(char *word) {
 
 
 void trie_insert(struct node_t *root, char *word) {
+    if(root == NULL) return;
 
     int word_length = strlen(word);
     struct node_t *temp = root;
@@ -75,6 +77,7 @@ void trie_insert(struct node_t *root, char *word) {
         // Go down the trie and search for the letters in the word
 
         int letter_index = (int)word[level] - (int)'a';    // this gets the letters index in the alphabet
+        if(letter_index < 0) return;    // this IS sometimes needed
 
         if(temp->children[letter_index] == NULL) {
             // The letter isn't in the tree => insert it
@@ -99,7 +102,7 @@ void trie_delete(struct node_t *root) {
         // Go through every child of every node
         if(root->children[i] != NULL) {
             trie_delete(root->children[i]);
-            free(root->children[i]);
+            g_free(root->children[i]);
         }
     }
 }

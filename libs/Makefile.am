@@ -1,7 +1,5 @@
 SUBDIRS = dict_handling ui_util
 
-AM_CPPFLAGS = -I$(top_srcdir)
-
 noinst_LTLIBRARIES = libutil.la
 
 libutil_la_SOURCES = \
@@ -12,3 +10,5 @@ libutil_la_SOURCES = \
 libutil_la_LIBADD = \
 	dict_handling/libdict.la \
 	ui_util/libui.la
+
+AM_CPPFLAGS = -I$(top_srcdir) $(GLIB_CFLAGS)
