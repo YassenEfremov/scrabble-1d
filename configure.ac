@@ -1,5 +1,5 @@
 AC_PREREQ([2.69])
-AC_INIT([scrabble], [1.1.0-beta], [])
+AC_INIT([scrabble], [2.0.0-beta], [])
 AC_CONFIG_SRCDIR([src/main.c])
 AC_CONFIG_AUX_DIR([build-aux])
 AC_CONFIG_MACRO_DIR([m4])
