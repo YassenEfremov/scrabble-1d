@@ -9,7 +9,7 @@ Makefile
 Makefile.in
 
 # In main directory
-!build
+.vscode/c_cpp_properties.json
 build/*
 !build/README.md
 build-aux/

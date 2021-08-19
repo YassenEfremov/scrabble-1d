@@ -13,7 +13,10 @@ LT_INIT
 AC_PROG_CC
 
 # Checks for libraries.
-AC_CHECK_LIB([config], [config_init])
+PKG_CHECK_MODULES([GLIB], [glib-2.0])
+AC_CHECK_LIB([ncurses], [initscr])
+AC_CHECK_LIB([menu], [post_menu])
+AC_CHECK_LIB([form], [post_form])
 
 # Checks for header files.
 AC_CHECK_HEADERS([stddef.h stdlib.h string.h])
@@ -32,7 +35,9 @@ AC_CHECK_FUNCS([memset strstr])
 AC_CONFIG_FILES([Makefile
                  libs/Makefile
                  libs/dict_handling/Makefile
+                 libs/ui_util/Makefile
                  src/Makefile
+                 src/add_new_word/Makefile
                  src/game_logic/Makefile
                  src/game_settings/Makefile])
 AC_OUTPUT

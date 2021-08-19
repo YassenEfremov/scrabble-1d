@@ -3,31 +3,33 @@
 
 /* ============================================================================================= */
 
-#ifndef FILE_CONTENTS_TO_STRING		// Include guard
-#define FILE_CONTENTS_TO_STRING
+#ifndef DICT_HANDLING_H		// Include guard
+#define DICT_HANDLING_H
 
 /* --------------------------------------------------------------------------------------------- */
 /* Utility functions */
 
 
-/* Copy the contents of a file to a string.
-
-   Note: The returned pointer must be freed MANUALLY!
-
-- address of file pointer must be given as an argument
-- returns a DYNAMIC pointer to char containing the contents of the given file */
+/*
+ * Copy the contents of a file to a string.
+ *
+ * - address of file pointer must be given as an argument
+ * - returns a DYNAMIC pointer to char containing the contents of the given file
+ * 
+ * Note: The returned pointer must be freed MANUALLY!
+ */
 char *strfcpy(FILE *file);
+
+
+/*
+ * Remove all spaces from the given string.
+ * Note: ADDRESS of string (char pointer) must be given as an argument!
+ */
+void strrmspaces(char **str);
 
 
 /* --------------------------------------------------------------------------------------------- */
 /* Scrabble: dictionary and trie handling functions */
-
-
-/*
- * Scrabble: Add a new word to the dictionary file.
- * - returns 0 on success
- */
-int addWordToDict();
 
 
 /*
@@ -51,6 +53,8 @@ int trieToJson(struct node_t *trie_root);
  * Check if the given word is in the json trie.
  * - return 1 if it is
  * - return 0 if it isn't
+ * 
+ * Note: return -1 if the word is shorter than 2 letters.
  */
 int checkTrie(char *word);
 

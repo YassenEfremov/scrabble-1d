@@ -3,20 +3,26 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <ctype.h>      // atoi
-#include "dict_handling.h"
+#include <ctype.h>      // isspace
+#include <glib.h>
+#include <ncurses.h>
+#include <menu.h>
+#include <form.h>
 
 #include "libs/jRead.h"
 #include "libs/jWrite.h"
 #include "libs/trie.h"
+#include "libs/ui_util/ui_util.h"
+
+#include "dict_handling.h"
 
 
-// ============================================================================================= //
+/* ============================================================================================= */
 
 
 char *strfcpy(FILE *file) {
     if(!file) {
-        printf("strfpcy: file doesn't exist");
+        message_log("strfcpy: file doesn't exist");
         return NULL;
     }
 
@@ -38,79 +44,19 @@ char *strfcpy(FILE *file) {
 /* --------------------------------------------------------------------------------------------- */
 
 
-int addWordToDict() {
+void strrmspaces(char **str) {
 
-    // Open the dictionary for appending and reading
-    FILE *dict = fopen("../config/dictionary.txt", "a+");
+    if(strcmp(*str, "") == 0) return;    // the given string is empty
 
-    if(!dict) {
-        // Catch any exeptions
-        printf("\nError: Dictionary missing!");
-        return 2;
-    }
+    // remove all spaces in the front
+    while(isspace(**str)) (*str)++;
 
-    // Copy its contetnts into a buffer
-    char *dict_string = strfcpy(dict);
+    // remove all spaces in the back
+    char *str_end = *str + strlen(*str) - 1;
+    while(str_end > *str && isspace(*str_end)) str_end--;
 
-
-
-    // Take user input
-
-    char word[46];      // Longest english word is 45 letters! 
-    printf("New word (Enter 9 to cancel): ");
-    scanf("%s", word);
-
-    // If we enter 9 => end round
-    if(strcmp(word, "9") == 0){
-        fclose(dict);
-        free(dict_string);
-        system("clear");
-		return -1;
-	}
-
-
-    // Convert all letters to lowercase
-    for(int i = 0; i < strlen(word); i++) {
-        word[i] = tolower(word[i]);
-    }
-    word[46] = '\0';
-
-
-    // Validation checks
-
-    // Check if word is longer than allowed
-    while(strlen(word) > 46) {
-        printf("Longest word is 46 letters!\n");
-        printf("New word: ");
-        scanf("%s", word);  // the MAXIMUM word lengh is 45
-    }
-
-    // Check if the word is already in the dictionary
-    
-    char newline_word[strlen(word) + 2];     // a word with new lines at the front and back
-    sprintf(newline_word, "\n%s\n", word);
-
-    while(strstr(dict_string, newline_word) != NULL) {
-        printf("This word is already in the dictionary!\n"); 
-        printf("New word: ");
-        scanf("%s", word);
-        sprintf(newline_word, "\n%s\n", word);
-    }
-
-
-
-    // Append the word to the dictionary + a newline
-    fprintf(dict, "%s\n", word);
-
-    system("clear");
-    printf("Insert successful!\n");
-
-
-    // Close the file and free the allocated memory
-    fclose(dict);
-    free(dict_string);
-
-    return 0;
+    // terminating null
+    *(str_end + 1) = '\0';
 }
 
 
@@ -142,7 +88,7 @@ struct node_t *dictToTrie() {
 
     if(!dict) {
         // Catch any exeptions
-        printf("\nError: Dictionary missing!");
+        message_log("Error: Dictionary missing!");
         return NULL;
     }
 
@@ -196,10 +142,9 @@ int trieToJson(struct node_t *trie_root) {
 
     if(!trie_json) {
         // Catch any exeptions
-        printf("\nError: Trie json file missing!");
+        message_log("Error: Trie json file missing!");
         return 2;
     }
-
 
 
     // Treverse the trie and write it to a json file
@@ -220,16 +165,23 @@ int trieToJson(struct node_t *trie_root) {
 }
 
 
-/* --------------------------------------------------------------------------------------------- */
+/* ============================================================================================= */
 
 
 int checkTrie(char *word) {
 
+    if(strlen(word) < 2) return -1;
+
 	FILE *trie_json = fopen("../json/trie.json", "r");
+    if(!trie_json) {
+        // Catch any exeptions
+        message_log("Error: Trie json file missing!");
+        return 2;
+    }
 	char *json_string = strfcpy(trie_json);
 	fclose(trie_json);
 
-	int element;	// stores the value of isEndOfWord
+	int is_end_of_word;	// stores the value of isEndOfWord
     
     char *ending = "isEndOfWord'";
     int length = strlen(word);
@@ -253,10 +205,10 @@ int checkTrie(char *word) {
     char *final_word = realloc(bigger_word, (strlen(bigger_word) + strlen(ending) + 1) * sizeof(char)); 
     strcat(final_word, ending);
 
-	element = jRead_int(json_string, final_word, NULL);
+    is_end_of_word = jRead_int(json_string, final_word, NULL);
 
 	free(json_string);
 	free(final_word);
 
-	return element;
+	return is_end_of_word;
 }

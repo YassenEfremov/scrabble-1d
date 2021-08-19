@@ -6,11 +6,12 @@ The application depends on these libraries being installed:
 - When building from source code the following tools are needed:
   - ```autoconf```
   - ```automke```
+  - ```pkg-config```
 - These libraries are always needed:
+  - ```glib-2.0```
   - ```ncurses```
   - ```menu```
   - ```form```
-  - ```libconfig```
 
 
 ## Build from tarball

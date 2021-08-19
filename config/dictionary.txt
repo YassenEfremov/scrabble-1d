@@ -1,4 +1,3 @@
-
 ability
 able
 about
@@ -992,7 +991,7 @@ you
 young
 your
 yourself
-zebra 
+zebra
 zookeeper
 zebrawood
 zoophile

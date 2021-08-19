@@ -10040,7 +10040,7 @@
                 "r": {
                     "isEndOfWord": 0,
                     "a": {
-                        "isEndOfWord": 0,
+                        "isEndOfWord": 1,
                         "w": {
                             "isEndOfWord": 0,
                             "o": {
@@ -10061,9 +10061,6 @@
                 "o": {
                     "isEndOfWord": 1
                 }
-            },
-            "t": {
-                "isEndOfWord": 1
             }
         },
         "i": {
