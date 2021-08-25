@@ -5,9 +5,6 @@
 #include <string.h>
 #include <ctype.h>      // isspace
 #include <glib.h>
-#include <ncurses.h>
-#include <menu.h>
-#include <form.h>
 
 #include "libs/jRead.h"
 #include "libs/jWrite.h"
@@ -32,7 +29,7 @@ char *strfcpy(FILE *file) {
     rewind(file);  // reset pos. indicator
 
     // Save them in a buffer
-    char *buffer = (char *)malloc((file_size + 1) * sizeof(char));
+    char *buffer = (char *)g_malloc((file_size + 1) * sizeof(char));
     fread(buffer, file_size, 1, file);
 
     buffer[file_size] = '\0';   // last char is terminating zero
@@ -185,7 +182,7 @@ int checkTrie(char *word) {
     
     char *ending = "isEndOfWord'";
     int length = strlen(word);
-    char *bigger_word = (char *)malloc(5 * sizeof(char));	// 4 + 1 byte for '\0'
+    char *bigger_word = (char *)g_malloc(5 * sizeof(char));	// 4 + 1 byte for '\0'
 	//int new_word_len = 5;
     
 	// Create the query string using the entered word
@@ -198,17 +195,17 @@ int checkTrie(char *word) {
         bigger_word[i+3] = '\'';	//char ' (single quote)
 		bigger_word[i+4] = '\0';
 
-        char *new_word = realloc(bigger_word, (strlen(bigger_word) + 5) * sizeof(char));
+        char *new_word = g_realloc(bigger_word, (strlen(bigger_word) + 5) * sizeof(char));
 		bigger_word = new_word;
     }
     
-    char *final_word = realloc(bigger_word, (strlen(bigger_word) + strlen(ending) + 1) * sizeof(char)); 
+    char *final_word = g_realloc(bigger_word, (strlen(bigger_word) + strlen(ending) + 1) * sizeof(char)); 
     strcat(final_word, ending);
 
     is_end_of_word = jRead_int(json_string, final_word, NULL);
 
-	free(json_string);
-	free(final_word);
+	g_free(json_string);
+	g_free(final_word);
 
 	return is_end_of_word;
 }

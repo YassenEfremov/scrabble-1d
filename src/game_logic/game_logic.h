@@ -19,7 +19,7 @@ static void get_rand_letters(char letters_array[], int letters);
 
 /* Refresh the settings menu screen. (use on resize of terminal) */
 static void refresh_game_win(WINDOW *game_win, WINDOW *rand_letters_win, WINDOW *input_win,
-							 int letters, int rounds, int r, int points);
+							 int letters, int rounds, int r, int points, char *input_str);
 
 
 /* ============================================================================================= */

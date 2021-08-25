@@ -10,8 +10,7 @@ Makefile.in
 
 # In main directory
 .vscode/c_cpp_properties.json
-build/*
-!build/README.md
+build/
 build-aux/
 m4/
 aclocal.m4

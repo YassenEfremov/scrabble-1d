@@ -28,6 +28,9 @@ static int get_settings(int *letters, int *rounds) {
 	game_settings = g_key_file_new();
 	conf_flags = G_KEY_FILE_KEEP_COMMENTS | G_KEY_FILE_KEEP_TRANSLATIONS;	// set those 2 flags
 
+	// Create config file if it doesn't exist
+	//> create file
+
 	// Open config file and catch any errors			TEMPORARY LOCATION
     if(!g_key_file_load_from_file(game_settings, "../config/game_settings.cfg", conf_flags, &conf_error)) {
     	//g_error("%s", conf_error->message);
@@ -49,13 +52,13 @@ static int get_settings(int *letters, int *rounds) {
 /* Refresh the main menu screen. (use on resize of terminal) */
 static void refresh_main_menu(WINDOW *main_menu_win, int num_of_items) {
 
+	// If the size of the terminal is smaller than (39, 5) everything glitches out!				// TO DO
+
 	endwin();
 	refresh();
 	clear();
 	getmaxyx(stdscr, term_rows, term_cols);	// get the new dimentions of the main screen
-	//printw("%d %d", term_rows/2 - num_of_items/2, term_cols/2 - 6);	
 
-	// If the size of the terminal is smaller than [39, 5] everything glitches out!				// TO DO
 	mvwin(main_menu_win, term_rows/2 - num_of_items/2, term_cols/2 - 6);
 	mvwin(title_win, main_menu_win->_begy - 4 - 3, term_cols/2 - 19);
 	mvwin(msg_win, main_menu_win->_begy + num_of_items + 3, term_cols/2 - MSG_LEN/2);
@@ -95,10 +98,11 @@ int main(int argc, const char *argv[]) {
 	init_pair(3, COLOR_CYAN, COLOR_BLACK);		// Final round blue
 	init_pair(4, COLOR_YELLOW, COLOR_BLACK);	// Game over yellow
 	init_pair(5, COLOR_RED, COLOR_BLACK);		// Invalid input red
+	init_pair(6, COLOR_MAGENTA, COLOR_BLACK);	// "Amazing!" magenta
 	init_pair(99, COLOR_BLACK, COLOR_GREEN);	// For debugging
 
 	// Other settings
-	cbreak();//raw();
+	raw();
 	noecho();
 	keypad(stdscr, TRUE);	// The standard screen is used ONLY for reading input!
 	curs_set(0);
@@ -150,7 +154,7 @@ int main(int argc, const char *argv[]) {
 	/* Title */
 
 	// Title window (defined globally!)
-	title_win = newwin(4, 38, main_menu_win->_begy - 4 - 3, term_cols/2 - 19);
+	title_win = newwin(5, 38, main_menu_win->_begy - 4 - 3, term_cols/2 - 19);
 
 	char *mtitle =
 		" ____ ____ ___    _  __  __   __  ____"
@@ -159,6 +163,7 @@ int main(int argc, const char *argv[]) {
     	" /___/\\___||_|\\_/_/_||__/|__/|___/|___/"
 		;
 	//char *mline = "------------------------";
+	//char *mtitle_text = "One Dimentional";
 
 	wattron(title_win, A_BOLD);
 	wattron(title_win, COLOR_PAIR(1));
@@ -166,6 +171,9 @@ int main(int argc, const char *argv[]) {
 	wattroff(title_win, COLOR_PAIR(1));
 	//mvaddstr(term_rows/3 + 1, term_cols/2 - strlen(mline)/2, mline);	// centered
 	wattroff(title_win, A_BOLD);
+	//wattron(title_win, A_ITALIC);
+	//mvwaddstr(title_win, 4, 22, mtitle_text);
+	//wattroff(title_win, A_ITALIC);
 
 
 	/* --------------------------------------------------------------------------------------------- */

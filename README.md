@@ -1,28 +1,53 @@
-# Версия на играта Scrabble
+## About the game
+This is a scrabble game written in C. Well, it's not _actually_ like the real scrabble board game because it's one-dimentional! The idea is:
 
-## Какви са правилата?
-Играта протича по следния начин:
+> You get a couple of randomly generated letters and you have to make a word with them.
 
-> 1. Във всеки рунд се генерират няколко на брой букви и се изписват на екрана.
-> 2. Потребителят въвежда дума, която се състои само от предоставените букви.  
->    - При въвеждане на невалидна дума (която съдържа други букви или повече от подадения брой от дадена буква) се извежда съобщение за грешка и се преминава към стъпка **2**.  
->    - При въвеждане на валидна дума се изчисляват точките ѝ (по подразбиране всяка буква е 1 точка) и се прибавят към общите точки на потребителя.
-> 3. Докато не свършат рундовете се връщаме към точка **2**.
-> 4. При приключване на последния рунд се изписва крайния резултат на играча и се връща в основното меню.
+The word is checked in a **dictionary** (a file with all the valid words).
 
-## Кои думи са валидни?
-Използваме зареден от файл речник с думи. Всяка дума, въведена от потребителя, се търси в този речник дали е валидна или не.
+You can add your own **words** and customise the number of **random letters** and **rounds** in a game!
 
-За проверката на това дали една дума е валидна в дадения речник използваме дърво [Trie](https://en.wikipedia.org/wiki/Trie).
+## How to install
+The game is only supported on **Linux**. Make sure you have these libraries installed:
+- ```glib-2.0```
+- ```ncurses``` + ```menu``` & ```form``` libraries
 
-## Как мога да играя?
-**ВАЖНО:** Играта е разработвана главно на **Linux Mint**, затова най-вероятно не функционира на **Windows**.
+After that there are two ways to install the game:
 
-В папката ```build/``` ще намерите инструкции как да инсталирате играта!
+### 1. Build from tarball (Recommended)
+Download and extract the latest release archive. Then in the main directory just do:
+```
+./configure
+make
+```
+To run the game:
+```
+./src/scrabble
+```
 
-## Подробности по разработването
-### Разпределение на работата
-* Логика на играта - *Данаил Божков*
-* Четене на речник и генериране на дърво - *Ясен Ефремов*
-* Добавяне на дума в речника, записване на дървото във файл, четене на дървото от файл - *Лъчезар Велинов*
-* Валидиране на дума в дървото - *Лъчезар Лазаров*
+### 2. Build from source code
+For this you will need to have ```pkg-config``` and [autotools](https://wiki.debian.org/AutoTools) installed. (If you are using **Linux** you probably already have autotools installed.)
+ 
+Download the source code from Github and in the main directory do:
+```
+./autogen.sh
+./configure
+make
+```
+To run the game:
+```
+./src/scrabble
+```
+
+## History
+This game was created as an end of the year school project for a C programming class. You can find the original game description and requirements [here](https://docs.google.com/document/d/1iJ19b5DOhtxwusi0C6MZwoIvN2oWixf0GZRDZN-PC4U/edit).
+
+Me and my classmates developed this game as a team (You can find their profiles in the contributors tab). We first created the base game without any fancy interface and that's what we presented to our teacher. After that I continued to develop the game alone. I added autotools, ncurses UI and lots of other things in order to make this project as professional as possible.
+
+Here's how we split up the work initially (kind of):
+- Game logic - _Danail Bozhkov_ (good job man)
+- Generating and fetching a _trie_ structure - Yassen Efremov (i also kinda managed the whole project)
+- Other _trie_ structure operations - _Lachezar Velinov_ (helped me and i helped him, my guy)
+- Validating a word in the _trie_ structure - _Lachezar Lazarov_ (you know what you did...)
+
+Nevertheless I would like to thank them all for participating in this project with me. The whole development process was a major learning experience and I'm very glad it turned out the way it did.

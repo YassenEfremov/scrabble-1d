@@ -73,20 +73,16 @@ int addNewWord() {
 
 
 	/* ----------------------------------------------------------------------------------------- */
-	/* Windows */
+	/* New word window */
 
-    // New word window
-    WINDOW *new_word_win = newwin(6, 42, term_rows/2 - 3, term_cols/2 - 21);
-
-    // Input window
-    WINDOW *input_win = newwin(1, INPUT_FLD_LEN, new_word_win->_begy + 3, new_word_win->_begx + 6);
-
+    WINDOW *new_word_win = newwin(8, 42, term_rows/2 - 3, term_cols/2 - 21);
     box(new_word_win, 0, 0);
 
 
 	/* ----------------------------------------------------------------------------------------- */
 	/* Input form */
 
+    WINDOW *input_win = newwin(1, INPUT_FLD_LEN, new_word_win->_begy + 3, new_word_win->_begx + 6);
     // Fields (only 1)
     FIELD **input_field = (FIELD **)calloc(fld_count + 1, sizeof(FIELD *));
 	input_field[0] = new_field(1, INPUT_FLD_LEN, 0, 0, 0, 1);
@@ -114,6 +110,7 @@ int addNewWord() {
     mvwprintw(new_word_win, 1, getmaxx(new_word_win)/2 - 7, "Enter new word:");
     wattroff(new_word_win, A_BOLD);
     wattroff(new_word_win, A_UNDERLINE);
+    mvwprintw(new_word_win, 6, getmaxx(new_word_win)/2 - 11, "(Press SPACE to cancel)");
 
     // Post the form
 	post_form(input_form);

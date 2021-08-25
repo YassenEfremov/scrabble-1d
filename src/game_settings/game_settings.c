@@ -50,12 +50,14 @@ static int change_settings(int new_letters, int new_rounds) {
 
 static void refresh_settings_menu(WINDOW *settings_menu_win, int num_of_items) {
 
+	// If the size of the terminal is smaller than (39, 5) everything glitches out!				// TO DO
+    // WHEN THE SCREEN IS TOO SMALL SOME ELEMENTS DISAPPEAR										// TO DO
+
 	endwin();
 	refresh();
 	clear();
 	getmaxyx(stdscr, term_rows, term_cols);	// get the new dimentions of the main screen
 
-	// If the size of the terminal is smaller than (39, 5) everything glitches out!				// TO DO
 	mvwin(settings_menu_win, term_rows/2 - num_of_items/2, term_cols/2 - 6);
     attron(A_UNDERLINE);
     attron(A_BOLD);
@@ -66,7 +68,6 @@ static void refresh_settings_menu(WINDOW *settings_menu_win, int num_of_items) {
 	mvwin(title_win, settings_menu_win->_begy - 4 - 4, term_cols/2 - 19);
 	mvwin(msg_win, settings_menu_win->_begy + num_of_items + 3, term_cols/2 - MSG_LEN/2);
 
-    // WHEN THE SCREEN IS TOO SMALL SOME ELEMENTS DISAPPEAR										// TO DO
 
 	// Refresh the necessay elements
 	refresh();
