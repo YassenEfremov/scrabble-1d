@@ -1,5 +1,9 @@
+<p align="center">
+  <img alt="Scrabble 1D - ncurses" src="https://user-images.githubusercontent.com/48584741/132108460-fd350d2d-3701-4cd6-adbe-f6ed216168a5.png">
+</p>
+
 ## About the game
-This is a scrabble game written in C. Well, it's not _actually_ like the real scrabble board game because it's one-dimentional! The idea is:
+This is a scrabble game written in **C**. Well, it's not _actually_ like the real scrabble board game because it's one-dimentional! The idea is:
 
 > You get a couple of randomly generated letters and you have to make a word with them.
 
