@@ -4,7 +4,7 @@
 /* ============================================================================================= */
 /* Private functions */
 
-static void refresh_new_word_win();
+static void refresh_new_word_win(WINDOW *new_word_win, WINDOW *input_win);
 
 
 /* ============================================================================================= */
@@ -15,4 +15,4 @@ static void refresh_new_word_win();
  * Scrabble: Add a new word to the dictionary file.
  * - returns 0 on success
  */
-int addNewWord();
+int addNewWord(void);

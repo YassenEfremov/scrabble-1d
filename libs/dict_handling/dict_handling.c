@@ -1,11 +1,12 @@
 /* Definitions for functions declared in dict_handling.h */
 
-#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <ctype.h>      // isspace
 #include <glib.h>
+#include <glib/gstdio.h>
 
+#include "libs/file_paths.h"
 #include "libs/jRead.h"
 #include "libs/jWrite.h"
 #include "libs/trie.h"
@@ -79,26 +80,25 @@ struct node_t *trieGenerate(char *dict_contents) {
 /* --------------------------------------------------------------------------------------------- */
 
 
-struct node_t *dictToTrie() {
+struct node_t *dictToTrie(void) {
 
-    FILE *dict = fopen("../config/dictionary.txt", "r");
-
+    gchar *dict_file_path =  g_build_filename(g_get_user_data_dir(), GAME_DATA_DIR, DICT_NAME, (char *)NULL);
+    FILE *dict = g_fopen(dict_file_path, "r");
     if(!dict) {
-        // Catch any exeptions
         message_log("Error: Dictionary missing!");
+        g_free(dict_file_path);
         return NULL;
     }
 
-    // Copy the dictionary contents to a string buffer
-    char *dict_contents = strfcpy(dict);
+    char *dict_contents = strfcpy(dict);    // Copy the dictionary contents to a string buffer
 
-    fclose(dict);   // we don't need the file anymore, close it
+    fclose(dict);
 
     // Generate the trie from the buffer
     struct node_t *temp_trie_root = trieGenerate(dict_contents);
 
-
-    free(dict_contents);   // free the momory for the buffer
+    g_free(dict_contents);
+    g_free(dict_file_path);
 
     return temp_trie_root;  // return the generated trie
 }
@@ -135,14 +135,8 @@ void trieWriteJson(struct node_t *root) {
 
 int trieToJson(struct node_t *trie_root) {
 
-    FILE *trie_json = fopen("../json/trie.json", "w");
-
-    if(!trie_json) {
-        // Catch any exeptions
-        message_log("Error: Trie json file missing!");
-        return 2;
-    }
-
+    gchar *dict_json_path =  g_build_filename(g_get_user_data_dir(), GAME_DATA_DIR, DICT_JSON_NAME, (char *)NULL);
+    FILE *trie_json = g_fopen(dict_json_path, "w");
 
     // Treverse the trie and write it to a json file
 
@@ -155,8 +149,8 @@ int trieToJson(struct node_t *trie_root) {
 
     fwrite(json_string, sizeof(json_string), 1, trie_json);	// Write the json string to the json file
 
-
     fclose(trie_json);
+    g_free(dict_json_path);
 
     return err_code;
 }
@@ -169,14 +163,15 @@ int checkTrie(char *word) {
 
     if(strlen(word) < 2) return -1;
 
-	FILE *trie_json = fopen("../json/trie.json", "r");
-    if(!trie_json) {
-        // Catch any exeptions
-        message_log("Error: Trie json file missing!");
-        return 2;
-    }
+    gchar *data_dir = g_build_filename(g_get_user_data_dir(), GAME_DATA_DIR, (char *)NULL);
+    gchar *dict_json_path =  g_build_filename(g_get_user_data_dir(), GAME_DATA_DIR, DICT_JSON_NAME, (char *)NULL);
+
+    //if(!g_file_test(dict_json_path, G_FILE_TEST_EXISTS)) return 2;  // If it doesn't exist AGAIN
+
+    FILE *trie_json = g_fopen(dict_json_path, "r");
 	char *json_string = strfcpy(trie_json);
 	fclose(trie_json);
+
 
 	int is_end_of_word;	// stores the value of isEndOfWord
     

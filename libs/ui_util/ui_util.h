@@ -14,7 +14,7 @@
 
 
 /* The maximum message length printable in the message window. */
-#define MSG_LEN 36
+#define MSG_LEN 40
 
 /* The maximum length of the data in a field. */
 #define INPUT_FLD_LEN 30

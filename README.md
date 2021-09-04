@@ -15,28 +15,22 @@ The game is only supported on **Linux**. Make sure you have these libraries inst
 After that there are two ways to install the game:
 
 ### 1. Build from tarball (Recommended)
-Download and extract the latest release archive. Then in the main directory just do:
+Download and extract the [latest release](https://github.com/YassenEfremov/scrabble-1d/releases) archive. Then in the main directory do:
 ```
 ./configure
 make
-```
-To run the game:
-```
-./src/scrabble
+sudo make install
 ```
 
 ### 2. Build from source code
-For this you will need to have ```pkg-config``` and [autotools](https://wiki.debian.org/AutoTools) installed. (If you are using **Linux** you probably already have autotools installed.)
+For this you will need to have ```pkg-config``` and [autotools](https://wiki.debian.org/AutoTools) (```autoconf``` and ```automake```) installed.
  
 Download the source code from Github and in the main directory do:
 ```
 ./autogen.sh
 ./configure
 make
-```
-To run the game:
-```
-./src/scrabble
+sudo make install
 ```
 
 ## History

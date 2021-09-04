@@ -38,7 +38,7 @@ void strrmspaces(char **str);
  */
 struct node_t *trieGenerate(char *dict_contents);
 /* Create a trie structure from the dictionary */
-struct node_t *dictToTrie();
+struct node_t *dictToTrie(void);
 
 /* 
  * > Called by trieToJson

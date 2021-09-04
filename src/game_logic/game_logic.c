@@ -18,44 +18,13 @@
 /* Private functions */
 
 
-static int check_word(char *word, char rand_letters[]) {
+static int check_word(char *word) {
 
-	int word_points = 0;
-
-	if(strcmp(word, "") == 0) return -2;	// nothing was typed (string is empty)
-
-	// Copy the random letters to a temporary array so the original one won't change 
-	char temp_letters[strlen(rand_letters) + 1];
-	strcpy(temp_letters, rand_letters);
-
-
-	/* ----- Check 1 ----- */
-	// Is the word is composed of the available letters?
-
-	for(int i = 0; word[i] != '\0'; i++) {
-
-		int match = 0;
-	
-		for(int j = 0; j < strlen(temp_letters); j++) {
-			if(word[i] == temp_letters[j]) {
-				temp_letters[j] = '-';	// set the checked letter to '-' so double letters won't cause problems
-				word_points++;
-				match = 1;
-				break;
-			}
-		}
-		
-		if(match == 0) return -1; // No letter matched
-	}
-
-
-	/* ----- Check 2 ----- */
-	// Is the word is in the dictionary?
+	if(strcmp(word, "") == 0) return -1;	// nothing was typed (string is empty)
 
 	if(checkTrie(word) != 1) return 0;
 
-
-	return word_points;
+	return strlen(word);
 }
 
 
@@ -156,7 +125,7 @@ static void refresh_game_win(WINDOW *game_win, WINDOW *rand_letters_win, WINDOW 
 		wattroff(game_win, A_BOLD);
 
 
-		// Refresh the necessay elements
+		// Refresh the necessary elements
 		refresh();
 		wrefresh(game_win);
 		wrefresh(rand_letters_win);
@@ -241,7 +210,6 @@ void startGame(int letters, int rounds) {
 
 	// Reposition message window
 	mvwin(msg_win, game_win->_begy + 0.8 * term_rows - 3, term_cols/2 - MSG_LEN/2);
-	wrefresh(msg_win);
 
 
 	/* ----------------------------------------------------------------------------------------- */
@@ -283,6 +251,7 @@ void startGame(int letters, int rounds) {
 		wrefresh(game_win);
 		wrefresh(rand_letters_win);
 		wrefresh(input_win);
+		wrefresh(msg_win);
 
 
 		// Read input from the user
@@ -342,24 +311,19 @@ void startGame(int letters, int rounds) {
 					strrmspaces(&input_str);	// remove spaces from the string (only back and front)
 
 
-					// Check if the word is valid and give points accordingly
-					word_points = check_word(input_str, rand_letters);
+					// Check if the word is in the dictionary
+					word_points = check_word(input_str);
 
 					switch(word_points) {
-						case -2:
-							is_valid = 0;
-							message_log("Type something...");
-							wrefresh(msg_win);
-							break;
-
 						case -1:
 							is_valid = 0;
-							message_log("Word isn't valid!");
+							message_log("Type something using the letters above!");
+							wrefresh(msg_win);
 							break;
 
 						case 0:
 							is_valid = 0;
-							message_log("Word isn't in dictionary!");
+							message_log("This word isn't in the dictionary!");
 							break;
 
 						default:

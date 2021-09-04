@@ -12,7 +12,7 @@
  * - 0 if the word isn't in the dictionary.
  * - (-1) if the word isn't composed of the available letters.
  */
-static int check_word(char *word, char rand_letters[]);
+static int check_word(char *word);
 
 /* Generate and array of random letters and return them. */
 static void get_rand_letters(char letters_array[], int letters);

@@ -5,8 +5,8 @@
 #include <ncurses.h>
 #include <menu.h>
 
-#include "libs/trie.h"
-#include "libs/dict_handling/dict_handling.h"
+#include "libs/file_paths.h"
+#include "libs/file_checks.h"
 #include "libs/ui_util/ui_util.h"
 
 #include "game_logic/game_logic.h"
@@ -19,30 +19,23 @@
 
 
 /* Read the game settings from the config file and update them in-game. */
-static int get_settings(int *letters, int *rounds) {
+static void get_settings(int *letters, int *rounds) {
 
-	GKeyFile *game_settings;
-	GKeyFileFlags conf_flags;
+	GKeyFile *game_settings = g_key_file_new();
+	GKeyFileFlags conf_flags = G_KEY_FILE_KEEP_COMMENTS | G_KEY_FILE_KEEP_TRANSLATIONS;
 	GError *conf_error = NULL;
 
-	game_settings = g_key_file_new();
-	conf_flags = G_KEY_FILE_KEEP_COMMENTS | G_KEY_FILE_KEEP_TRANSLATIONS;	// set those 2 flags
+	//gchar *config_dir = g_build_filename(g_get_user_config_dir(), GAME_CONFIG_DIR, (char *)NULL);
+	gchar *config_file_path =  g_build_filename(g_get_user_config_dir(), GAME_CONFIG_DIR, GAME_CONFIG_NAME, (char *)NULL);
 
-	// Create config file if it doesn't exist
-	//> create file
-
-	// Open config file and catch any errors			TEMPORARY LOCATION
-    if(!g_key_file_load_from_file(game_settings, "../config/game_settings.cfg", conf_flags, &conf_error)) {
-    	//g_error("%s", conf_error->message);
-      	return 2;
-    }
-
+	g_key_file_load_from_file(game_settings, config_file_path, conf_flags, &conf_error);
+	// Get the letters and rounds
 	*letters = g_key_file_get_integer(game_settings, "Settings", "letters", &conf_error);
 	*rounds = g_key_file_get_integer(game_settings, "Settings", "rounds", &conf_error);
 
 	g_key_file_free(game_settings);
-
-	return 0;
+	//g_free(config_dir);
+	g_free(config_file_path);
 }
 
 
@@ -69,7 +62,7 @@ static void refresh_main_menu(WINDOW *main_menu_win, int num_of_items) {
 		mvwin(title_win, main_menu_win->_begy - 4 - 3, term_cols/2 - 19);
 	}
 */
-	// Refresh the necessay elements
+	// Refresh the necessary elements
 	refresh();
 	wrefresh(title_win);
 }
@@ -113,8 +106,7 @@ int main(int argc, const char *argv[]) {
 
 	// Variables
 
-	int letters;
-	int rounds;
+	int letters, rounds;	// The in-game letters and rounds variables!
 
 	char *items_list[] = {
 		"New Game",
@@ -163,7 +155,7 @@ int main(int argc, const char *argv[]) {
     	" /___/\\___||_|\\_/_/_||__/|__/|___/|___/"
 		;
 	//char *mline = "------------------------";
-	//char *mtitle_text = "One Dimentional";
+	char *mtitle_text = "One-Dimentional";
 
 	wattron(title_win, A_BOLD);
 	wattron(title_win, COLOR_PAIR(1));
@@ -171,9 +163,9 @@ int main(int argc, const char *argv[]) {
 	wattroff(title_win, COLOR_PAIR(1));
 	//mvaddstr(term_rows/3 + 1, term_cols/2 - strlen(mline)/2, mline);	// centered
 	wattroff(title_win, A_BOLD);
-	//wattron(title_win, A_ITALIC);
-	//mvwaddstr(title_win, 4, 22, mtitle_text);
-	//wattroff(title_win, A_ITALIC);
+	wattron(title_win, A_ITALIC);
+	mvwaddstr(title_win, 4, 22, mtitle_text);
+	wattroff(title_win, A_ITALIC);
 
 
 	/* --------------------------------------------------------------------------------------------- */
@@ -234,10 +226,11 @@ int main(int argc, const char *argv[]) {
 					case 0:
 						/* ------------- Start game ------------- */
 
-						if(get_settings(&letters, &rounds)) {	// refresh game settings
-							message_log("Error: Game config file missing!");
-							break;
-						}
+						// Game file checks
+						check_config_file();
+						get_settings(&letters, &rounds);	// Refresh settings in-game.
+						check_dict_file();
+						check_trie_json_file();
 
 						unpost_menu(main_menu);  		  // hide the main menu
 						wrefresh(main_menu_win);
@@ -248,10 +241,9 @@ int main(int argc, const char *argv[]) {
 					case 1:
 						/* --------- Open game settings --------- */
 
-						if(get_settings(&letters, &rounds)) {	// refresh game settings
-							message_log("Error: Game config file missing!");
-							break;
-						}
+						// Game file checks
+						check_config_file(); //message_log("Settings file missing: Created default.");
+						get_settings(&letters, &rounds);	// Refresh settings in-game.
 
 						unpost_menu(main_menu);  		  // hide the main menu
 						wrefresh(main_menu_win);
@@ -261,6 +253,10 @@ int main(int argc, const char *argv[]) {
 
 					case 2:
 						/* ---- Add a word to the dictionary ---- */
+
+						// Game file checks
+						check_dict_file();
+						check_trie_json_file();
 
 						unpost_menu(main_menu);  		  // hide the main menu
 						wrefresh(main_menu_win);

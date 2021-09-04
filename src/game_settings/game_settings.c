@@ -9,6 +9,7 @@
 #include <menu.h>
 #include <form.h>
 
+#include "libs/file_paths.h"
 #include "libs/dict_handling/dict_handling.h"
 #include "libs/ui_util/ui_util.h"
 
@@ -19,27 +20,25 @@
 /* Private functions */
 
 
+/* Update the game settings in the configuration file. */
 static int change_settings(int new_letters, int new_rounds) {
 
-	GKeyFile *game_settings;
-	GKeyFileFlags conf_flags;
+	GKeyFile *game_settings = g_key_file_new();
+	GKeyFileFlags conf_flags = G_KEY_FILE_KEEP_COMMENTS | G_KEY_FILE_KEEP_TRANSLATIONS;   // set those 2 flags 
 	GError *conf_error = NULL;
 
-	game_settings = g_key_file_new();
-	conf_flags = G_KEY_FILE_KEEP_COMMENTS | G_KEY_FILE_KEEP_TRANSLATIONS;   // set those 2 flags
+	gchar *config_path = g_build_filename(g_get_user_config_dir(), GAME_CONFIG_DIR, GAME_CONFIG_NAME, (char *)NULL);
 
-	// Open config file and catch any errors			TEMPORARY LOCATION
-    if(!g_key_file_load_from_file(game_settings, "../config/game_settings.cfg", conf_flags, &conf_error)) {
-    	g_error("%s", conf_error->message);
-      	return 2;
-    }
+    g_key_file_load_from_file(game_settings, config_path, conf_flags, &conf_error);
 
+    // Write the new letters and rounds
     if(new_letters != 0) g_key_file_set_integer(game_settings, "Settings", "letters", new_letters);
     if(new_rounds != 0) g_key_file_set_integer(game_settings, "Settings", "rounds", new_rounds);
 
-    g_key_file_save_to_file(game_settings, "../config/game_settings.cfg", &conf_error);
+    g_key_file_save_to_file(game_settings, config_path, &conf_error);
 
 	g_key_file_free(game_settings);
+    g_free(config_path);
 
     return 0;
 }
@@ -69,7 +68,7 @@ static void refresh_settings_menu(WINDOW *settings_menu_win, int num_of_items) {
 	mvwin(msg_win, settings_menu_win->_begy + num_of_items + 3, term_cols/2 - MSG_LEN/2);
 
 
-	// Refresh the necessay elements
+	// Refresh the necessary elements
 	refresh();
 	wrefresh(title_win);
     wrefresh(msg_win);
@@ -85,7 +84,7 @@ static char *take_field_input(int fld_index, char *err_msg,
 
     int key;
     char first_num = '0';   // usefull so you can't type 0 in as the first number
-    int is_valid = 0, to_refresh = 0;
+    gboolean is_valid = 0, to_refresh = 0;
 
     char *field_str = field_buffer(settings_fields[fld_index], 0);   // get the field string
                                                                      // THIS IS NOT STABLE ON SOME SYSTEMS!!
@@ -329,7 +328,6 @@ void gameSettings(int *letters, int *rounds) {
 
                         // Change the settings in the file (only if they have changed!)
                         if(atoi(field_str) != *letters) change_settings(atoi(field_str), 0);
-
 						break;
 
 					case 1:
@@ -340,8 +338,7 @@ void gameSettings(int *letters, int *rounds) {
                                                     num_of_items);
 
                         // Change the settings in the file (only if they have changed!)
-                        if(atoi(field_str) != *rounds) change_settings(0, atoi(field_str));
-
+                        if(atoi(field_str) != *letters) change_settings(0, atoi(field_str));
 						break;
 
 					case 2:

@@ -3,10 +3,12 @@
 #include <stdio.h>
 #include <string.h>
 #include <glib.h>
+#include <glib/gstdio.h>
 #include <ncurses.h>
 #include <menu.h>
 #include <form.h>
 
+#include "libs/file_paths.h"
 #include "libs/trie.h"
 #include "libs/dict_handling/dict_handling.h"
 #include "libs/ui_util/ui_util.h"
@@ -43,7 +45,7 @@ static void refresh_new_word_win(WINDOW *new_word_win, WINDOW *input_win) {
 
     // WHEN THE SCREEN IS TOO SMALL SOME ELEMENTS DISAPPEAR										// TO DO
 
-	// Refresh the necessay elements
+	// Refresh the necessary elements
 	refresh();
 	wrefresh(new_word_win);
     wrefresh(title_win);
@@ -54,7 +56,7 @@ static void refresh_new_word_win(WINDOW *new_word_win, WINDOW *input_win) {
 /* Public functions */
 
 
-int addNewWord() {
+int addNewWord(void) {
 
     refresh();
 	getmaxyx(stdscr, term_rows, term_cols);	// get the dimentions of the main screeno
@@ -64,9 +66,10 @@ int addNewWord() {
 
 	char *input_str;
     int fld_count = 1;
-	int is_valid, dict_err;
+	gboolean is_valid, dict_err;
 
     struct node_t *trie_root;
+    gchar *dict_file_path;
     FILE *dict;
 
 	int key;
@@ -91,7 +94,7 @@ int addNewWord() {
     // Field settings
     set_field_type(input_field[0], TYPE_ALPHA, 2);		// SOMETIMES DOESN'T WORK
 	field_opts_off(input_field[0], O_AUTOSKIP);
-	set_field_just(input_field[0], JUSTIFY_CENTER);		// SOMETIMES DOESN'T WORK
+	set_field_just(input_field[0], JUSTIFY_CENTER);		// DOESN'T WORK
 
     // Form
 	FORM *input_form = new_form(input_field);
@@ -104,19 +107,24 @@ int addNewWord() {
 	/* ----------------------------------------------------------------------------------------- */
 
 
-    // Print title
+    // Print title and hint
     wattron(new_word_win, A_UNDERLINE);
     wattron(new_word_win, A_BOLD);
     mvwprintw(new_word_win, 1, getmaxx(new_word_win)/2 - 7, "Enter new word:");
     wattroff(new_word_win, A_BOLD);
     wattroff(new_word_win, A_UNDERLINE);
+    wattron(new_word_win, A_ITALIC);
     mvwprintw(new_word_win, 6, getmaxx(new_word_win)/2 - 11, "(Press SPACE to cancel)");
+    wattroff(new_word_win, A_ITALIC);
 
     // Post the form
 	post_form(input_form);
 
-    // Refresh everything
+    werase(msg_win);
     wrefresh(msg_win);
+
+    // Reposition message window
+    mvwin(msg_win, new_word_win->_begy + getmaxy(new_word_win) + 2, term_cols/2 - MSG_LEN/2);
 
 
     /* ----------------------------------------------------------------------------------------- */
@@ -155,7 +163,7 @@ int addNewWord() {
                 form_driver(input_form, REQ_VALIDATION);  // update field buffer
                 input_str = field_buffer(input_field[0], 0);	// get the field string
                 strrmspaces(&input_str);	// remove spaces from the string (only back and front)
-                //mvprintw(0, 0, "!%s!", input_str);
+
 
                 // Check if the word is already in the dictionary
                 is_valid = checkTrie(input_str);
@@ -178,22 +186,15 @@ int addNewWord() {
                         is_valid = 1;
 
 
-                        // ADD GLIB FILE HANDLING HERE!!!                               // TO DO
-
-
-                        // Open the dictionary for appending and reading
-                        dict = fopen("../config/dictionary.txt", "a+");
-
-                        if(!dict) {
-                            // Catch any exeptions
-                            message_log("Error: Dictionary missing!");
-                            break;
-                        }
+                        // Open the dictionary for appending
+                        dict_file_path =  g_build_filename(g_get_user_data_dir(), GAME_DATA_DIR, DICT_NAME, (char *)NULL);
+                        dict = g_fopen(dict_file_path, "a+");
 
                         // Append the word to the dictionary + a newline
                         fprintf(dict, "%s\n", input_str);
 
                         fclose(dict);
+                        g_free(dict_file_path);
 
 
                         trie_root = dictToTrie();   // generate trie structure from dictionary
@@ -217,6 +218,13 @@ int addNewWord() {
 
                         message_log("Successfully added!");
                         break;
+                    /*
+                    case 2:
+                        // Error processing dictionary files and structures
+                        is_valid = 2;
+                        message_log("Trie json file missing: Generated new.");
+                        break;
+                    */
                 }
                 break;
 
