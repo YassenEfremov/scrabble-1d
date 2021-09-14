@@ -3,7 +3,7 @@
 </p>
 
 ## About the game
-This is a scrabble game written in **C**. Well, it's not _actually_ like the real scrabble board game because it's one-dimentional! The idea is:
+This is a one-dimentional scrabble-like console game written in **C**. The idea is:
 
 > You get a couple of randomly generated letters and you have to make a word with them.
 
@@ -12,8 +12,9 @@ The word is checked in a **dictionary** (a file with all the valid words).
 You can add your own **words** and customise the number of **random letters** and **rounds** in a game!
 
 ## How to install
-The game is only supported on **Linux**. Make sure you have these libraries installed:
+The game is **only** supported on **Linux**. Make sure you have these libraries installed:
 - ```glib-2.0```
+- ```json-glib```
 - ```ncurses``` + ```menu``` & ```form``` libraries
 
 After that there are two ways to install the game:
@@ -38,7 +39,7 @@ sudo make install
 ```
 
 ## History
-This game was created as an end of the year school project for a C programming class. You can find the original game description and requirements [here](https://docs.google.com/document/d/1iJ19b5DOhtxwusi0C6MZwoIvN2oWixf0GZRDZN-PC4U/edit).
+This game was created as an end of the year school project for a C programming class.
 
 Me and my classmates developed this game as a team (You can find their profiles in the contributors tab). We first created the base game without any fancy interface and that's what we presented to our teacher. After that I continued to develop the game alone. I added autotools, ncurses UI and lots of other things in order to make this project as professional as possible.
 
