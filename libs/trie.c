@@ -1,11 +1,30 @@
-/* Definitions for functions declared in trie.h */
+/*
+ *	Trie handling functions
+ *
+ *  Copyright (C) 2021 Yassen Efremov
+ *
+ *	This program is free software: you can redistribute it and/or modify
+ *	it under the terms of the GNU General Public License as published by
+ *	the Free Software Foundation, either version 3 of the License, or
+ *	(at your option) any later version.
+ *
+ *	This program is distributed in the hope that it will be useful,
+ *	but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *	MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *	GNU General Public License for more details.
+ *
+ *	You should have received a copy of the GNU General Public License
+ *	along with this program.  If not, see <https://www.gnu.org/licenses/>.
+ */
+
+
+#include "trie.h"
+
+#include <glib.h>
 
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <glib.h>
-
-#include "trie.h"
 
 
 /* ============================================================================================= */
@@ -21,27 +40,6 @@ struct node_t *trie_create_node() {
     return new_node;
 }
 
-/*
-bool search(struct node_t *root, const char *key)
-{
-    int level;
-    int length = strlen(key);
-    int index;
-    struct node_t *pCrawl = root;
-
-    for (level = 0; level < length; level++)
-    {
-        index = CHAR_TO_INDEX(key[level]);
-
-        if (!pCrawl->children[index])
-            return false;
-
-        pCrawl = pCrawl->children[index];
-    }
-
-    return (pCrawl != NULL && pCrawl->isEndOfWord);
-}
-*/
 /*
 int check_trie_temp(char *word) {
 	// DON'T DELETE THIS CODE, it might be needed in the future

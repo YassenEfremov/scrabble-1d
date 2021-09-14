@@ -1,18 +1,37 @@
-/* Definitions for functions declared in dict_handling.h */
+/*
+ *	Dictionary handling functions
+ *
+ *  Copyright (C) 2021 Yassen Efremov
+ *
+ *	This program is free software: you can redistribute it and/or modify
+ *	it under the terms of the GNU General Public License as published by
+ *	the Free Software Foundation, either version 3 of the License, or
+ *	(at your option) any later version.
+ *
+ *	This program is distributed in the hope that it will be useful,
+ *	but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *	MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *	GNU General Public License for more details.
+ *
+ *	You should have received a copy of the GNU General Public License
+ *	along with this program.  If not, see <https://www.gnu.org/licenses/>.
+ */
 
-#include <stdlib.h>
-#include <string.h>
-#include <ctype.h>      // isspace
-#include <glib.h>
-#include <glib/gstdio.h>
+
+#include "dict_handling.h"
 
 #include "libs/file_paths.h"
-#include "libs/jRead.h"
-#include "libs/jWrite.h"
 #include "libs/trie.h"
 #include "libs/ui_util/ui_util.h"
 
-#include "dict_handling.h"
+#include <glib.h>
+#include <glib/gstdio.h>    // g_fopen
+#include <json-glib/json-glib.h>
+
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <ctype.h>      // isspace
 
 
 /* ============================================================================================= */
@@ -33,7 +52,7 @@ char *strfcpy(FILE *file) {
     char *buffer = (char *)g_malloc((file_size + 1) * sizeof(char));
     fread(buffer, file_size, 1, file);
 
-    buffer[file_size] = '\0';   // last char is terminating zero
+    buffer[file_size] = '\0';
 
     return buffer;
 }
@@ -53,7 +72,6 @@ void strrmspaces(char **str) {
     char *str_end = *str + strlen(*str) - 1;
     while(str_end > *str && isspace(*str_end)) str_end--;
 
-    // terminating null
     *(str_end + 1) = '\0';
 }
 
@@ -82,7 +100,7 @@ struct node_t *trieGenerate(char *dict_contents) {
 
 struct node_t *dictToTrie(void) {
 
-    gchar *dict_file_path =  g_build_filename(g_get_user_data_dir(), GAME_DATA_DIR, DICT_NAME, (char *)NULL);
+    gchar *dict_file_path = g_build_filename(g_get_user_data_dir(), GAME_DIR, DICT_NAME, (char *)NULL);
     FILE *dict = g_fopen(dict_file_path, "r");
     if(!dict) {
         message_log("Error: Dictionary missing!");
@@ -100,31 +118,33 @@ struct node_t *dictToTrie(void) {
     g_free(dict_contents);
     g_free(dict_file_path);
 
-    return temp_trie_root;  // return the generated trie
+    return temp_trie_root;
 }
 
 
 /* ============================================================================================= */
 
 
-void trieWriteJson(struct node_t *root) {
+void trieBuildJson(struct node_t *root, JsonBuilder *builder) {
 
     for(int i = 0; i < 26; i++){
-            
+        // convert the current letter to a string
         char letter[2] = "";
         letter[0] = ('a' + i);
         
-        if(root->children[i] != NULL){
+        if(root->children[i] != NULL) {
             
-            jwObj_object(letter);
-            if(root->children[i]->isEndOfWord == 1){
-                jwObj_int("isEndOfWord", 1);
-            }
-            else{
-                jwObj_int("isEndOfWord", 0);
-            }
-            trieWriteJson(root->children[i]);
-            jwEnd();
+            json_builder_set_member_name(builder, letter);
+            json_builder_begin_object(builder);
+            if(root->children[i]->isEndOfWord == 1) {
+                json_builder_set_member_name(builder, "isEndOfWord");  
+                json_builder_add_int_value(builder, 1);
+            }/*else {
+                json_builder_set_member_name(builder, "isEndOfWord");  
+                json_builder_add_int_value(builder, 0);
+            }*/
+            trieBuildJson(root->children[i], builder);  // do the same for the children
+            json_builder_end_object(builder);
         }
     }
 }
@@ -135,24 +155,35 @@ void trieWriteJson(struct node_t *root) {
 
 int trieToJson(struct node_t *trie_root) {
 
-    gchar *dict_json_path =  g_build_filename(g_get_user_data_dir(), GAME_DATA_DIR, DICT_JSON_NAME, (char *)NULL);
-    FILE *trie_json = g_fopen(dict_json_path, "w");
+    gchar *dict_json_path = g_build_filename(g_get_user_data_dir(), GAME_DIR, DICT_JSON_NAME, (char *)NULL);
 
-    // Treverse the trie and write it to a json file
 
-	// First create a json string buffer
-    char json_string[300000];   		//! the size of the array sometimes causes problems when writing to file
+    JsonBuilder *builder = json_builder_new();
 
-    jwOpen(json_string, sizeof(json_string), JW_OBJECT, JW_PRETTY);	// Open the root json node
-    trieWriteJson(trie_root);							// Write the trie to the json string
-    int err_code = jwClose();										// Close the root json node (return error code)
+    // Build the json structure
+    json_builder_begin_object(builder);  // open root object
+    trieBuildJson(trie_root, builder);
+    json_builder_end_object(builder);  // close root object
 
-    fwrite(json_string, sizeof(json_string), 1, trie_json);	// Write the json string to the json file
 
-    fclose(trie_json);
+    JsonGenerator *generator = json_generator_new();
+    GError *dict_json_error = NULL;
+    // generator settings
+    json_generator_set_pretty(generator, 1);
+    json_generator_set_indent(generator, 4);
+
+    // Write it to the json file
+    JsonNode *root = json_builder_get_root(builder);
+    json_generator_set_root(generator, root);
+    json_generator_to_file(generator, dict_json_path, &dict_json_error);
+
+
+    json_node_free(root);
+    g_object_unref(generator);
+    g_object_unref(builder);
     g_free(dict_json_path);
 
-    return err_code;
+    return 0;
 }
 
 
@@ -161,46 +192,38 @@ int trieToJson(struct node_t *trie_root) {
 
 int checkTrie(char *word) {
 
-    if(strlen(word) < 2) return -1;
-
-    gchar *data_dir = g_build_filename(g_get_user_data_dir(), GAME_DATA_DIR, (char *)NULL);
-    gchar *dict_json_path =  g_build_filename(g_get_user_data_dir(), GAME_DATA_DIR, DICT_JSON_NAME, (char *)NULL);
-
-    //if(!g_file_test(dict_json_path, G_FILE_TEST_EXISTS)) return 2;  // If it doesn't exist AGAIN
-
-    FILE *trie_json = g_fopen(dict_json_path, "r");
-	char *json_string = strfcpy(trie_json);
-	fclose(trie_json);
+    gchar *dict_json_path = g_build_filename(g_get_user_data_dir(), GAME_DIR, DICT_JSON_NAME, (char *)NULL);
 
 
-	int is_end_of_word;	// stores the value of isEndOfWord
-    
-    char *ending = "isEndOfWord'";
-    int length = strlen(word);
-    char *bigger_word = (char *)g_malloc(5 * sizeof(char));	// 4 + 1 byte for '\0'
-	//int new_word_len = 5;
-    
-	// Create the query string using the entered word
-    int j = 0;
-    for(int i = 0; i <= 4 * length; i+= 4, j++) {
+    int is_end_of_word, i;	// stores the value of isEndOfWord
+    char letter[2] = "";
 
-        bigger_word[i] = '{';
-        bigger_word[i+1] = '\'';	// char ' (single quote)
-        bigger_word[i+2] = word[j];
-        bigger_word[i+3] = '\'';	//char ' (single quote)
-		bigger_word[i+4] = '\0';
+    JsonParser *parser = json_parser_new();
+    GError *dict_json_error = NULL;
 
-        char *new_word = g_realloc(bigger_word, (strlen(bigger_word) + 5) * sizeof(char));
-		bigger_word = new_word;
+    json_parser_load_from_file(parser, dict_json_path, &dict_json_error);
+
+
+    JsonReader *reader = json_reader_new(json_parser_get_root(parser));
+
+    // go through the letters of the word and check if they exist in the json file
+    for(i = 0; i < strlen(word); i++) {
+        // convert the current letter to a string
+        letter[0] = word[i];
+        if(!json_reader_read_member(reader, letter)) {
+            // the letter wasn't in the object -> the word isn't in the dictionary
+            is_end_of_word = 0;
+            break;
+        }   
     }
-    
-    char *final_word = g_realloc(bigger_word, (strlen(bigger_word) + strlen(ending) + 1) * sizeof(char)); 
-    strcat(final_word, ending);
+    // finally, check if the word is actually valid
+    json_reader_read_member(reader, "isEndOfWord");
+    is_end_of_word = json_reader_get_boolean_value(reader);
 
-    is_end_of_word = jRead_int(json_string, final_word, NULL);
 
-	g_free(json_string);
-	g_free(final_word);
+    g_object_unref(reader);
+    g_object_unref(parser);
+    g_free(dict_json_path);
 
 	return is_end_of_word;
 }

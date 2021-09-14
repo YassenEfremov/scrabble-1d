@@ -1,5 +1,5 @@
 AC_PREREQ([2.69])
-AC_INIT([scrabble-1d], [2.1.0-beta], [])
+AC_INIT([scrabble-1d], [1.0.0-rc.1], [])
 AC_CONFIG_SRCDIR([src/main.c])
 AC_CONFIG_AUX_DIR([build-aux])
 AC_CONFIG_MACRO_DIR([m4])
@@ -14,6 +14,7 @@ AC_PROG_CC
 
 # Checks for libraries.
 PKG_CHECK_MODULES([GLIB], [glib-2.0])
+PKG_CHECK_MODULES([JSON_GLIB], [json-glib-1.0])
 AC_CHECK_LIB([ncurses], [initscr])
 AC_CHECK_LIB([menu], [post_menu])
 AC_CHECK_LIB([form], [post_form])

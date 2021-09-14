@@ -1,5 +1,7 @@
 /* Functions that check for game files. */
 
+#include <time.h>
+
 
 /* ============================================================================================= */
 
@@ -12,10 +14,11 @@
 /* 
  * Check if the game settings config file exists.
  * If not -> create it with the default settings.
+ * Also update the settings in-game.
  * - return 0 if it exists
  * - return 2 for missing file
  */
-int check_config_file(void);
+int check_config_file(int *letters, int *rounds);
 
 /*
  * Check if the dictionary file exists.

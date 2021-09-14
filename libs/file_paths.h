@@ -7,10 +7,16 @@
 #define FILE_PATHS_H
 
 /* --------------------------------------------------------------------------------------------- */
-/* Game config */
+/* General */
 
 
-#define GAME_CONFIG_DIR "scrabble-1d"
+#define GAME_DIR "scrabble-1d"
+
+
+/* --------------------------------------------------------------------------------------------- */
+/* Game config files */
+
+
 #define GAME_CONFIG_NAME "game_settings.conf"
 
 
@@ -18,10 +24,11 @@
 /* Game data files */
 
 
-#define GAME_DATA_DIR "scrabble-1d"
 #define DICT_NAME "dictionary.txt"
 #define DEFAULT_DICT_NAME "default_dictionary.txt"
 #define DICT_JSON_NAME "dictionary_trie.json"
+
+#define DICT_TIMESTAMP_NAME "timestamp.txt"
 
 
 /* --------------------------------------------------------------------------------------------- */

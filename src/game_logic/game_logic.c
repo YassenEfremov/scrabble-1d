@@ -1,17 +1,36 @@
-/* Definitions for functions declared in game_logic.h */
+/*
+ *	Game logic funcions
+ *
+ *  Copyright (C) 2021 Yassen Efremov
+ *
+ *	This program is free software: you can redistribute it and/or modify
+ *	it under the terms of the GNU General Public License as published by
+ *	the Free Software Foundation, either version 3 of the License, or
+ *	(at your option) any later version.
+ *
+ *	This program is distributed in the hope that it will be useful,
+ *	but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *	MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *	GNU General Public License for more details.
+ *
+ *	You should have received a copy of the GNU General Public License
+ *	along with this program.  If not, see <https://www.gnu.org/licenses/>.
+ */
+
+
+#include "game_logic.h"
+
+#include "libs/dict_handling/dict_handling.h"
+#include "libs/ui_util/ui_util.h"
+
+#include <ncurses.h>
+#include <menu.h>
+#include <form.h>
 
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <time.h>
-#include <ncurses.h>
-#include <menu.h>
-#include <form.h>
-
-#include "libs/dict_handling/dict_handling.h"
-#include "libs/ui_util/ui_util.h"
-
-#include "game_logic.h"
 
 
 /* ============================================================================================= */
@@ -82,26 +101,7 @@ static void refresh_game_win(WINDOW *game_win, WINDOW *rand_letters_win, WINDOW 
 	attroff(A_BOLD);
 	attroff(COLOR_PAIR(1));
 
-	if(r == rounds) {
-		// Game has ended -> refresh ending screen
-
-		wattron(game_win, A_BOLD);
-		wattron(game_win, COLOR_PAIR(4));
-		mvwprintw(game_win, 2, getmaxx(game_win)/2 - 5, "GAME OVER!");
-		wattroff(game_win, COLOR_PAIR(4));
-
-		mvwprintw(game_win, getmaxy(game_win)/2, getmaxx(game_win)/2 - 7, "Final score: %d", points);
-		wattroff(game_win, A_BOLD);
-
-		wattron(game_win, A_ITALIC);
-		mvwprintw(game_win, getmaxy(game_win) - 2, getmaxx(game_win)/2 - 13, "Press ENTER to continue...");
-		wattroff(game_win, A_ITALIC);
-
-
-		refresh();
-		wrefresh(game_win);
-
-	}else {
+	if(r != rounds) {
 		// Game is in progress -> refresh current round
 
 		mvwin(rand_letters_win,
@@ -129,6 +129,26 @@ static void refresh_game_win(WINDOW *game_win, WINDOW *rand_letters_win, WINDOW 
 		refresh();
 		wrefresh(game_win);
 		wrefresh(rand_letters_win);
+
+	}else {
+
+		// Game has ended -> refresh ending screen
+
+		wattron(game_win, A_BOLD);
+		wattron(game_win, COLOR_PAIR(4));
+		mvwprintw(game_win, 2, getmaxx(game_win)/2 - 5, "GAME OVER!");
+		wattroff(game_win, COLOR_PAIR(4));
+
+		mvwprintw(game_win, getmaxy(game_win)/2, getmaxx(game_win)/2 - 7, "Final score: %d", points);
+		wattroff(game_win, A_BOLD);
+
+		wattron(game_win, A_ITALIC);
+		mvwprintw(game_win, getmaxy(game_win) - 2, getmaxx(game_win)/2 - 13, "Press ENTER to continue...");
+		wattroff(game_win, A_ITALIC);
+
+
+		refresh();
+		wrefresh(game_win);
 	}
 }
 
@@ -154,7 +174,7 @@ void startGame(int letters, int rounds) {
 	char *input_str = "";
     int fld_count = 1;
 
-	int is_valid, is_skipped = 1;
+	int is_valid, take_input = 1;
 	int key;
 
 
@@ -163,7 +183,7 @@ void startGame(int letters, int rounds) {
 
 	// Game window
 	WINDOW *game_win = newwin(0.8 * term_rows, 0.8 * term_cols,	// size is 80% of the screen
-							  0.1 * term_rows, 0.1 * term_cols);	// start is at 10% of the screen
+							  0.1 * term_rows, 0.1 * term_cols);	// position is at 10% of the screen
 	box(game_win, 0, 0);
 
 	// Random letters window
@@ -185,7 +205,6 @@ void startGame(int letters, int rounds) {
     // Field settings
     set_field_type(input_field[0], TYPE_ALPHA, 2);		// SOMETIMES DOESN'T WORK
 	field_opts_off(input_field[0], O_AUTOSKIP);
-	set_field_just(input_field[0], JUSTIFY_CENTER);		// SOMETIMES DOESN'T WORK
 
     // Form
 	FORM *input_form = new_form(input_field);
@@ -256,8 +275,8 @@ void startGame(int letters, int rounds) {
 
 		// Read input from the user
 		do {
-			if(is_skipped) key = getch();
-			is_skipped = 1;
+			if(take_input) key = getch();
+			take_input = 1;
 			
 			switch(key) {
 				/* All possible actions in the field */
@@ -277,7 +296,7 @@ void startGame(int letters, int rounds) {
       	            	form_driver(input_form, REQ_DEL_PREV);
 					}
 
-					// Put it back in save_letters
+					// Put the deleted letter in save_letters
 					if(strlen(input_str) != 0) {
 						for(int i = strlen(save_letters); i >= 0; i--) {
 							if(save_letters[i] == ' ') {
@@ -311,7 +330,7 @@ void startGame(int letters, int rounds) {
 					strrmspaces(&input_str);	// remove spaces from the string (only back and front)
 
 
-					// Check if the word is in the dictionary
+					/* Check if the word is in the dictionary */
 					word_points = check_word(input_str);
 
 					switch(word_points) {
@@ -330,12 +349,12 @@ void startGame(int letters, int rounds) {
 							is_valid = 1;
 							points += word_points;
 							// pirnt different messages depending on the points
-							if(word_points >= 1 && word_points <= 4) {
+							if(word_points >= 1 && word_points <= 3) {
 								wattron(msg_win, COLOR_PAIR(1));
 								message_log("Great!");
 								wattroff(msg_win, COLOR_PAIR(1));
 
-							}else if(word_points >= 5 && word_points <= 8) {
+							}else if(word_points >= 4 && word_points <= 6) {
 								wattron(msg_win, COLOR_PAIR(6));
 								message_log("Amazing!");
 								wattroff(msg_win, COLOR_PAIR(6));
@@ -352,23 +371,52 @@ void startGame(int letters, int rounds) {
 					}
 					break;
 
-				case ' ':  // Space key: skip the round
+				case KEY_STAB:  // Skip the current round (handle all tab chars)
+				case '\t':
 					werase(msg_win);
 					wattron(msg_win, A_ITALIC);
-					message_log("* Press SPACE again to confirm *");
+					message_log("* Press TAB again to confirm *");
 					wattroff(msg_win, A_ITALIC);
 					wrefresh(msg_win);
+
 					key = getch();
-					if(key == ' ') {
-						// press space again
-						is_skipped = 1;  // we skipped the round -> take input on next iteration
+					if(key == KEY_STAB || key == '\t') {
+						// press tab again
+						take_input = 1;  // we skipped the round -> take input on next iteration
 						werase(msg_win);
 						message_log("Round skipped >>");
 						mvwprintw(game_win, 2, getmaxx(game_win) - 4, "   ");	// this clears the +points
 
 					}else {
 						// we didn't skip the round -> input is already taken -> don't take input on next iteration
-						is_skipped = 0;
+						take_input = 0;
+					}
+					break;
+
+				case ' ':	// Space key: end game
+					werase(msg_win);
+					wattron(msg_win, A_ITALIC);
+					message_log("* Press SPACE again to end the game *");
+					wattroff(msg_win, A_ITALIC);
+					wrefresh(msg_win);
+
+					key = getch();
+					if(key == ' ') {
+						// press space again
+
+						// Exit game window
+						exitForm(&input_form, &input_field, fld_count);
+						delwin(input_win);
+						delwin(rand_letters_win);
+						delwin(game_win);
+
+						werase(msg_win);
+
+						return;
+
+					}else {
+						// we didn't skip the round -> input is already taken -> don't take input on next iteration
+						take_input = 0;
 					}
 					break;
 
@@ -407,7 +455,7 @@ void startGame(int letters, int rounds) {
 			wrefresh(input_win);
 			wrefresh(msg_win);
 
-		}while(!is_valid && key != ' ');	// Read input until ENTER is pressed and the word isn't valid
+		}while(!is_valid && key != KEY_STAB && key != '\t');	// Read input until ENTER is pressed and the word isn't valid
 	}
 
 

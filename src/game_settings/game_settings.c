@@ -1,19 +1,37 @@
-/* Definitions for functions declared in game_settings.h */
+/*
+ *	Game settings menu
+ *
+ *  Copyright (C) 2021 Yassen Efremov
+ *
+ *	This program is free software: you can redistribute it and/or modify
+ *	it under the terms of the GNU General Public License as published by
+ *	the Free Software Foundation, either version 3 of the License, or
+ *	(at your option) any later version.
+ *
+ *	This program is distributed in the hope that it will be useful,
+ *	but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *	MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *	GNU General Public License for more details.
+ *
+ *	You should have received a copy of the GNU General Public License
+ *	along with this program.  If not, see <https://www.gnu.org/licenses/>.
+ */
 
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <ctype.h>      // atoi
-#include <glib.h>
-#include <ncurses.h>
-#include <menu.h>
-#include <form.h>
+
+#include "game_settings.h"
 
 #include "libs/file_paths.h"
 #include "libs/dict_handling/dict_handling.h"
 #include "libs/ui_util/ui_util.h"
 
-#include "game_settings.h"
+#include <glib.h>
+#include <ncurses.h>
+#include <menu.h>
+#include <form.h>
+
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
 
 
 /* ============================================================================================= */
@@ -27,7 +45,7 @@ static int change_settings(int new_letters, int new_rounds) {
 	GKeyFileFlags conf_flags = G_KEY_FILE_KEEP_COMMENTS | G_KEY_FILE_KEEP_TRANSLATIONS;   // set those 2 flags 
 	GError *conf_error = NULL;
 
-	gchar *config_path = g_build_filename(g_get_user_config_dir(), GAME_CONFIG_DIR, GAME_CONFIG_NAME, (char *)NULL);
+	gchar *config_path = g_build_filename(g_get_user_config_dir(), GAME_DIR, GAME_CONFIG_NAME, (char *)NULL);
 
     g_key_file_load_from_file(game_settings, config_path, conf_flags, &conf_error);
 
@@ -104,6 +122,7 @@ static char *take_field_input(int fld_index, char *err_msg,
     for(int i = 0; field_save[i+1] != '\0'; i++) form_driver(settings_form, REQ_NEXT_CHAR); // move to end of word
     wrefresh(settings_menu_win);
 
+
     // Read input from the user
     do {
         key = getch();
@@ -121,6 +140,13 @@ static char *take_field_input(int fld_index, char *err_msg,
             case '\b':
             case 127:
                 werase(msg_win);
+                form_driver(settings_form, REQ_VALIDATION);  // update field buffer
+                field_str = field_buffer(settings_fields[fld_index], 0);    // get field string
+                /* For some reason the REQ_VALIDATION line causes the cursor to be moved 1 position back.
+                   That is a problem only when the field is full e.g. it contains a 2 digit number. Therefore we move
+                   the cursor 1 position forward. */
+                if(atoi(field_str) > 10) form_driver(settings_form, REQ_NEXT_CHAR);
+
                 form_driver(settings_form, REQ_DEL_CHAR);
                 form_driver(settings_form, REQ_PREV_CHAR);
                 break;
@@ -166,7 +192,7 @@ static char *take_field_input(int fld_index, char *err_msg,
                 werase(msg_win);
                 form_driver(settings_form, REQ_VALIDATION);     // update field buffer
                 field_str = field_buffer(settings_fields[fld_index], 0);    // update field string
-                //in an empty field the first char is always a space
+                // in an empty field the first char is always a space
                 if(field_str[0] != ' ') {
                     form_driver(settings_form, REQ_NEXT_CHAR);
                     first_num = '0';
@@ -179,7 +205,6 @@ static char *take_field_input(int fld_index, char *err_msg,
 
         // Refresh everything
         wrefresh(settings_menu_win);
-        //wrefresh(msg_win);
 
     }while(key != 10 || is_valid != E_OK);  // Enter key
 

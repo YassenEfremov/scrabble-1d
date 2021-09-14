@@ -1,6 +1,10 @@
 /* Functions for interacting with the dictionary files and trie structure */
 
 
+#include <stdio.h>
+#include <json-glib/json-glib.h>
+
+
 /* ============================================================================================= */
 
 #ifndef DICT_HANDLING_H		// Include guard
@@ -44,7 +48,7 @@ struct node_t *dictToTrie(void);
  * > Called by trieToJson
  * Create a json string from the given trie structure
  */
-void trieWriteJson(struct node_t *root);
+void trieBuildJson(struct node_t *root, JsonBuilder *builder);
 /* Write the given trie structure to the json file */
 int trieToJson(struct node_t *trie_root);
 

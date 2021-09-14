@@ -1,45 +1,46 @@
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <glib.h>
-#include <ncurses.h>
-#include <menu.h>
+/*
+ *	Scrabble 1D - main program
+ *
+ *  Copyright (C) 2021 Yassen Efremov
+ *
+ *	This program is free software: you can redistribute it and/or modify
+ *	it under the terms of the GNU General Public License as published by
+ *	the Free Software Foundation, either version 3 of the License, or
+ *	(at your option) any later version.
+ *
+ *	This program is distributed in the hope that it will be useful,
+ *	but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *	MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *	GNU General Public License for more details.
+ *
+ *	You should have received a copy of the GNU General Public License
+ *	along with this program.  If not, see <https://www.gnu.org/licenses/>.
+ */
 
-#include "libs/file_paths.h"
-#include "libs/file_checks.h"
-#include "libs/ui_util/ui_util.h"
 
 #include "game_logic/game_logic.h"
 #include "game_settings/game_settings.h"
 #include "add_new_word/add_new_word.h"
 
+#include "libs/file_paths.h"
+#include "libs/file_checks.h"
+#include "libs/ui_util/ui_util.h"
+
+#include <glib.h>
+#include <ncurses.h>
+#include <menu.h>
+
+#include <sys/stat.h>
+#include <unistd.h>
+
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <errno.h>
+
 
 /* ============================================================================================= */
 /* Private functions */
-
-
-/* Read the game settings from the config file and update them in-game. */
-static void get_settings(int *letters, int *rounds) {
-
-	GKeyFile *game_settings = g_key_file_new();
-	GKeyFileFlags conf_flags = G_KEY_FILE_KEEP_COMMENTS | G_KEY_FILE_KEEP_TRANSLATIONS;
-	GError *conf_error = NULL;
-
-	//gchar *config_dir = g_build_filename(g_get_user_config_dir(), GAME_CONFIG_DIR, (char *)NULL);
-	gchar *config_file_path =  g_build_filename(g_get_user_config_dir(), GAME_CONFIG_DIR, GAME_CONFIG_NAME, (char *)NULL);
-
-	g_key_file_load_from_file(game_settings, config_file_path, conf_flags, &conf_error);
-	// Get the letters and rounds
-	*letters = g_key_file_get_integer(game_settings, "Settings", "letters", &conf_error);
-	*rounds = g_key_file_get_integer(game_settings, "Settings", "rounds", &conf_error);
-
-	g_key_file_free(game_settings);
-	//g_free(config_dir);
-	g_free(config_file_path);
-}
-
-
-/* --------------------------------------------------------------------------------------------- */
 
 
 /* Refresh the main menu screen. (use on resize of terminal) */
@@ -119,6 +120,8 @@ int main(int argc, const char *argv[]) {
 	int key;
 	ITEM *curr_item;
 	int curr_item_index;
+
+	int conf_err = 0, dict_err = 0, json_err = 0;
 
 
 	/* --------------------------------------------------------------------------------------------- */
@@ -226,11 +229,26 @@ int main(int argc, const char *argv[]) {
 					case 0:
 						/* ------------- Start game ------------- */
 
-						// Game file checks
-						check_config_file();
-						get_settings(&letters, &rounds);	// Refresh settings in-game.
-						check_dict_file();
-						check_trie_json_file();
+						// Game file checks (order is important!)
+						conf_err = check_config_file(&letters, &rounds);
+						if(conf_err) {
+							message_log(strerror(conf_err));
+							break;
+						}
+						dict_err = check_dict_file();
+						if(dict_err) {
+							if(dict_err == ENOENT) {
+								message_log("Error: Default dictionary not installed!");	// default dictionary missing
+							}else {
+								message_log(strerror(dict_err));
+							}
+							break;
+						}
+						json_err = check_trie_json_file();
+						if(json_err) {
+							message_log(strerror(json_err));
+							break;
+						}
 
 						unpost_menu(main_menu);  		  // hide the main menu
 						wrefresh(main_menu_win);
@@ -242,8 +260,11 @@ int main(int argc, const char *argv[]) {
 						/* --------- Open game settings --------- */
 
 						// Game file checks
-						check_config_file(); //message_log("Settings file missing: Created default.");
-						get_settings(&letters, &rounds);	// Refresh settings in-game.
+						conf_err = check_config_file(&letters, &rounds);
+						if(conf_err) {
+							message_log(strerror(conf_err));
+							break;
+						}
 
 						unpost_menu(main_menu);  		  // hide the main menu
 						wrefresh(main_menu_win);
@@ -254,9 +275,21 @@ int main(int argc, const char *argv[]) {
 					case 2:
 						/* ---- Add a word to the dictionary ---- */
 
-						// Game file checks
-						check_dict_file();
-						check_trie_json_file();
+						// Game file checks (order is important!)
+						dict_err = check_dict_file();
+						if(dict_err) {
+							if(dict_err == ENOENT) {
+								message_log("Error: Default dictionary not installed!");	// default dictionary missing
+							}else {
+								message_log(strerror(dict_err));
+							}
+							break;
+						}
+						json_err = check_trie_json_file();
+						if(json_err) {
+							message_log(strerror(json_err));
+							break;
+						}
 
 						unpost_menu(main_menu);  		  // hide the main menu
 						wrefresh(main_menu_win);
@@ -276,7 +309,8 @@ int main(int argc, const char *argv[]) {
 						exit(EXIT_SUCCESS);
 				}
 
-				/* NOTE:
+				/* 
+				 * NOTE:
 				 * The break statemant is omitted here because we want to refresh everything
 				 * after we have returned from the selected action (but NOT after we have used the arrow keys!)
 				 */

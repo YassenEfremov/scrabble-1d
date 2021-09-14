@@ -1,19 +1,41 @@
-/* Definitions for functions declared in add_new_word.h */
+/*
+ *	"Add new word" dialog
+ *
+ *  Copyright (C) 2021 Yassen Efremov
+ *
+ *	This program is free software: you can redistribute it and/or modify
+ *	it under the terms of the GNU General Public License as published by
+ *	the Free Software Foundation, either version 3 of the License, or
+ *	(at your option) any later version.
+ *
+ *	This program is distributed in the hope that it will be useful,
+ *	but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *	MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *	GNU General Public License for more details.
+ *
+ *	You should have received a copy of the GNU General Public License
+ *	along with this program.  If not, see <https://www.gnu.org/licenses/>.
+ */
 
-#include <stdio.h>
-#include <string.h>
-#include <glib.h>
-#include <glib/gstdio.h>
-#include <ncurses.h>
-#include <menu.h>
-#include <form.h>
+
+#include "add_new_word.h"
 
 #include "libs/file_paths.h"
 #include "libs/trie.h"
 #include "libs/dict_handling/dict_handling.h"
 #include "libs/ui_util/ui_util.h"
 
-#include "add_new_word.h"
+#include <glib.h>
+#include <glib/gstdio.h>    // g_fopen
+#include <ncurses.h>
+#include <menu.h>
+#include <form.h>
+
+#include <sys/stat.h>
+#include <unistd.h>
+
+#include <stdio.h>
+#include <string.h>
 
 
 /* ============================================================================================= */
@@ -69,8 +91,10 @@ int addNewWord(void) {
 	gboolean is_valid, dict_err;
 
     struct node_t *trie_root;
-    gchar *dict_file_path;
-    FILE *dict;
+    gchar *dict_file_path, *dict_timestamp_path;
+    FILE *dict, *dict_timestamp;
+    struct stat dict_stat;		// stats for dictionary file
+    time_t curr_mtime;
 
 	int key;
 
@@ -182,19 +206,29 @@ int addNewWord(void) {
                         break;
 
                     case 0:
-                        // Word is valid -> add it to the json trie file
+                        // Word is valid -> add it to the dictionary and json trie file
                         is_valid = 1;
 
 
-                        // Open the dictionary for appending
-                        dict_file_path =  g_build_filename(g_get_user_data_dir(), GAME_DATA_DIR, DICT_NAME, (char *)NULL);
+                        dict_file_path =  g_build_filename(g_get_user_data_dir(), GAME_DIR, DICT_NAME, (char *)NULL);
+                        dict_timestamp_path = g_build_filename(g_get_user_data_dir(), GAME_DIR, DICT_TIMESTAMP_NAME,
+                                                                                                     (char *)NULL);
+
                         dict = g_fopen(dict_file_path, "a+");
-
-                        // Append the word to the dictionary + a newline
-                        fprintf(dict, "%s\n", input_str);
-
+                        g_fprintf(dict, "%s\n", input_str);   // Append the word to the dictionary + a newline
                         fclose(dict);
+
+                        // Save the dictionary file modification time
+
+                        stat(dict_file_path, &dict_stat);	// save stats of dictionary file
+                        curr_mtime = dict_stat.st_mtime;
+
+        		        dict_timestamp = g_fopen(dict_timestamp_path, "w");
+        		        g_fprintf(dict_timestamp, "%ld", curr_mtime);
+        		        fclose(dict_timestamp);
+
                         g_free(dict_file_path);
+                        g_free(dict_timestamp_path);
 
 
                         trie_root = dictToTrie();   // generate trie structure from dictionary
@@ -251,6 +285,7 @@ int addNewWord(void) {
 
 
     set_field_back(input_field[0], A_NORMAL);
+
 
     exitForm(&input_form, &input_field, fld_count);
     delwin(input_win);

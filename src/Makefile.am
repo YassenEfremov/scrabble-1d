@@ -8,6 +8,7 @@ scrabble_1d_LDADD = \
 	game_settings/libsettings.la \
 	add_new_word/libnewword.la \
 	$(top_builddir)/libs/libutil.la \
+	$(JSON_GLIB_LIBS) \
 	$(GLIB_LIBS)
 
-AM_CPPFLAGS = -I$(top_srcdir) $(GLIB_CFLAGS) 
+AM_CPPFLAGS = -I$(top_srcdir) $(GLIB_CFLAGS) $(JSON_GLIB_CFLAGS)

@@ -1,5 +1,7 @@
 /* Function for adding a new word */
 
+#include <ncurses.h>
+
 
 /* ============================================================================================= */
 /* Private functions */
