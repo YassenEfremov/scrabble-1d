@@ -2,8 +2,14 @@
   <img alt="Scrabble 1D - ncurses" src="https://user-images.githubusercontent.com/48584741/132108460-fd350d2d-3701-4cd6-adbe-f6ed216168a5.png">
 </p>
 
-## About the game
-This is a one-dimentional scrabble-like console game written in **C**. The idea is:
+# Scrabble 1D
+[![GitHub release](https://img.shields.io/github/release/YassenEfremov/scrabble-1d)](https://github.com/YassenEfremov/scrabble-1d/releases/)
+[![AUR version](https://img.shields.io/aur/version/scrabble-1d)](https://aur.archlinux.org/packages/scrabble-1d/)
+[![Linux](https://img.shields.io/badge/os-linux-green)](https://www.google.com/search?q=linux)
+[![GitHub license](https://img.shields.io/github/license/YassenEfremov/scrabble-1d)](https://github.com/YassenEfremov/scrabble-1d/blob/master/LICENSE)
+[![C](https://img.shields.io/badge/made%20with-C-lightgrey?logo=c&logoColor=A8B9CC)](https://www.google.com/search?q=C)
+
+A one-dimentional scrabble-like console game written in **C**. The main idea is:
 
 > You get a couple of randomly generated letters and you have to make a word with them.
 
