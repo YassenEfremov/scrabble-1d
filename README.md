@@ -12,14 +12,33 @@ The word is checked in a **dictionary** (a file with all the valid words).
 You can add your own **words** and customise the number of **random letters** and **rounds** in a game!
 
 ## How to install
-The game is **only** supported on **Linux**. Make sure you have these libraries installed:
+**Note**: The game is **only** supported on **Linux**.
+
+### 1. Install from AUR
+If you're using an Arch based Linux distribution you can get the game from the **Arch User Repository** [here](https://aur.archlinux.org/packages/scrabble-1d/)!
+
+Manually:
+```
+git clone https://aur.archlinux.org/scrabble-1d.git
+cd scrabble-1d
+makepkg -si
+```
+
+Using a helper:
+```
+yay -S scrabble-1d
+```
+
+### 2. Normal install
+
+Make sure you have these libraries installed:
 - ```glib-2.0```
 - ```json-glib```
 - ```ncurses``` + ```menu``` & ```form``` libraries
 
 After that there are two ways to install the game:
 
-### 1. Build from tarball (Recommended)
+### Build from tarball (Recommended)
 Download and extract the [latest release](https://github.com/YassenEfremov/scrabble-1d/releases) archive. Then in the main directory do:
 ```
 ./configure
@@ -27,7 +46,7 @@ make
 sudo make install
 ```
 
-### 2. Build from source code
+#### Build from source code
 For this you will need to have ```pkg-config``` and [autotools](https://wiki.debian.org/AutoTools) (```autoconf``` and ```automake```) installed.
  
 Download the source code from Github and in the main directory do:
