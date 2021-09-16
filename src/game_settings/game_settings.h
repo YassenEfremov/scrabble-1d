@@ -27,8 +27,7 @@ static void refresh_settings_menu(WINDOW *settings_menu_win, int num_of_items);
 
 /* Take and vaidate input using the settings form fields. */
 static char *take_field_input(int opt_index, char *err_msg,
-                              WINDOW *settings_menu_win, FORM *settings_form, FIELD **settings_fields, 
-                              int num_of_items);
+                              WINDOW *settings_menu_win, FORM *settings_form, FIELD **settings_fields, int num_of_items);
 
 
 /* ============================================================================================= */

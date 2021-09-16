@@ -40,9 +40,7 @@
 static int check_word(char *word) {
 
 	if(strcmp(word, "") == 0) return -1;	// nothing was typed (string is empty)
-
 	if(checkTrie(word) != 1) return 0;
-
 	return strlen(word);
 }
 
@@ -169,10 +167,9 @@ void startGame(int letters, int rounds) {
 	int points = 0;			// total game points
 	int word_points = 0;	// points per word
 
-	char rand_letters[letters + 1];
-	char save_letters[letters + 1];
-	char *input_str = "";
+	char rand_letters[letters + 1], save_letters[letters + 1];
     int fld_count = 1;
+	char *input_str = "";
 
 	int is_valid, take_input = 1;
 	int key;
@@ -182,7 +179,7 @@ void startGame(int letters, int rounds) {
 	/* Game windows */
 
 	// Game window
-	WINDOW *game_win = newwin(0.8 * term_rows, 0.8 * term_cols,	// size is 80% of the screen
+	WINDOW *game_win = newwin(0.8 * term_rows, 0.8 * term_cols,		// size is 80% of the screen
 							  0.1 * term_rows, 0.1 * term_cols);	// position is at 10% of the screen
 	box(game_win, 0, 0);
 
@@ -234,33 +231,29 @@ void startGame(int letters, int rounds) {
 	/* ----------------------------------------------------------------------------------------- */
 	/* Game loop */
 
+
 	// Round loop
 	for(int r = 0; r < rounds; r++) {
 		is_valid = 0;
 		
 		wattron(game_win, A_BOLD);
 
-		// Print current round
-		mvwprintw(game_win, 1, 2, "Round %d / %d", r+1, rounds);
+		mvwprintw(game_win, 1, 2, "Round %d / %d", r+1, rounds);	// Print current round
 		if(r + 1 == rounds) {
-			// Last round
+			// On last round
 			wattron(game_win, COLOR_PAIR(3));
 			mvwprintw(game_win, 2, getmaxx(game_win)/2 - 6, "FINAL ROUND!");
 			wattroff(game_win, COLOR_PAIR(3));
 		}
-
-		// Print current points
-		mvwprintw(game_win, 1, getmaxx(game_win) - 11, "Points: %d", points);
+		mvwprintw(game_win, 1, getmaxx(game_win) - 11, "Points: %d", points);	// Print current points
 
 		wattroff(game_win, A_BOLD);
 
 
 		// Generate random letters and print them
 		get_rand_letters(rand_letters, letters);
-		strcpy(save_letters, rand_letters);
-		for(int i = 0; i < letters; i++) {
-			mvwprintw(rand_letters_win, 0, i * 2, "%c ", rand_letters[i]);
-		}
+		strcpy(save_letters, rand_letters);		// save the random letters
+		for(int i = 0; i < letters; i++) mvwprintw(rand_letters_win, 0, i * 2, "%c ", rand_letters[i]);
 
 
 		form_driver(input_form, REQ_FIRST_FIELD);
@@ -431,15 +424,13 @@ void startGame(int letters, int rounds) {
 					for(int i = 0; i < strlen(save_letters); i++) {
 						if(save_letters[i] == key) {
 							form_driver(input_form, key);	// write the letter
-							save_letters[i] = ' ';		// remove the typed letter
+							save_letters[i] = ' ';		// remove the typed letter from the save
 							break;
 						}
 					}
 
 					// Print all the random letters again
-					for(int i = 0; i < letters; i++) {
-						mvwprintw(rand_letters_win, 0, i * 2, "%c ", save_letters[i]);
-					}
+					for(int i = 0; i < letters; i++) mvwprintw(rand_letters_win, 0, i * 2, "%c ", save_letters[i]);
 					wrefresh(rand_letters_win);
 
 

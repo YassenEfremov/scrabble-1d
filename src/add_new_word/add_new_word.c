@@ -118,7 +118,7 @@ int addNewWord(void) {
     // Field settings
     set_field_type(input_field[0], TYPE_ALPHA, 2);		// SOMETIMES DOESN'T WORK
 	field_opts_off(input_field[0], O_AUTOSKIP);
-	set_field_just(input_field[0], JUSTIFY_CENTER);		// DOESN'T WORK
+	//set_field_just(input_field[0], JUSTIFY_CENTER);		// DOESN'T WORK
 
     // Form
 	FORM *input_form = new_form(input_field);
@@ -175,12 +175,14 @@ int addNewWord(void) {
                 werase(msg_win);
                 form_driver(input_form, REQ_VALIDATION);	// update field buffer
                 input_str = field_buffer(input_field[0], 0);	// get the field string
+                strrmspaces(&input_str);	// remove spaces from the string (only back and front)
 
-                if(strchr(input_str, ' ') == NULL) {
+                // Delete the last letter
+                if(strlen(input_str) == INPUT_FLD_LEN) {
                     form_driver(input_form, REQ_DEL_CHAR);
-                    break;
+                }else {
+                    form_driver(input_form, REQ_DEL_PREV);
                 }
-                form_driver(input_form, REQ_DEL_PREV);
                 break;
 
             case 10:  // Enter key (validate input)
@@ -245,20 +247,11 @@ int addNewWord(void) {
                             break;
                         }
 
-
-                        // Free all allocated memory
                         trie_delete(trie_root);
                         g_free(trie_root);
 
                         message_log("Successfully added!");
                         break;
-                    /*
-                    case 2:
-                        // Error processing dictionary files and structures
-                        is_valid = 2;
-                        message_log("Trie json file missing: Generated new.");
-                        break;
-                    */
                 }
                 break;
 
@@ -272,10 +265,7 @@ int addNewWord(void) {
 
             default:  // write to the field
                 werase(msg_win);	
-                // Move the input window
-                //> resize the field
-                //> move the field
-                if(key >= 'a' && key <= 'z') form_driver(input_form, key);     // this check is sometimes needed
+                if(key >= 'a' && key <= 'z') form_driver(input_form, key);  // check if the key is valid
                 break;
         }
         wrefresh(input_win);

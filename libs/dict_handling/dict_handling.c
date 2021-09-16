@@ -192,6 +192,8 @@ int trieToJson(struct node_t *trie_root) {
 
 int checkTrie(char *word) {
 
+    if(strlen(word) < 2) return -1;  // word is too short
+
     gchar *dict_json_path = g_build_filename(g_get_user_data_dir(), GAME_DIR, DICT_JSON_NAME, (char *)NULL);
 
 

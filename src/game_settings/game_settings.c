@@ -97,15 +97,14 @@ static void refresh_settings_menu(WINDOW *settings_menu_win, int num_of_items) {
 
 
 static char *take_field_input(int fld_index, char *err_msg,
-                              WINDOW *settings_menu_win, FORM *settings_form, FIELD **settings_fields, 
-                              int num_of_items) {
+                              WINDOW *settings_menu_win, FORM *settings_form, FIELD **settings_fields, int num_of_items) {
 
     int key;
     char first_num = '0';   // usefull so you can't type 0 in as the first number
     gboolean is_valid = 0, to_refresh = 0;
 
     char *field_str = field_buffer(settings_fields[fld_index], 0);   // get the field string
-                                                                     // THIS IS NOT STABLE ON SOME SYSTEMS!!
+                                                                     // field_str MAY RANDOMLY CHANGE ITS VALUE!!
                                                                      // > USE FIELD_SAVE INSTEAD!!!
     strrmspaces(&field_str);    // remove spaces (also adds '\0')
     set_field_buffer(settings_fields[fld_index], 1, field_str);     // save the old string in the additional field
@@ -119,7 +118,8 @@ static char *take_field_input(int fld_index, char *err_msg,
     // Move to the correct field and posiotion
     form_driver(settings_form, REQ_FIRST_FIELD);
     for(int i = 0; i < fld_index; i++) form_driver(settings_form, REQ_NEXT_FIELD);    // move to specified field
-    for(int i = 0; field_save[i+1] != '\0'; i++) form_driver(settings_form, REQ_NEXT_CHAR); // move to end of word
+    //for(int i = 0; field_str[i+1] != '\0'; i++) form_driver(settings_form, REQ_NEXT_CHAR); // move to end of word
+    form_driver(settings_form, REQ_END_FIELD); // move to end of word
     wrefresh(settings_menu_win);
 
 
@@ -142,13 +142,20 @@ static char *take_field_input(int fld_index, char *err_msg,
                 werase(msg_win);
                 form_driver(settings_form, REQ_VALIDATION);  // update field buffer
                 field_str = field_buffer(settings_fields[fld_index], 0);    // get field string
+                strrmspaces(&field_str);	// remove spaces from the string (only back and front)
                 /* For some reason the REQ_VALIDATION line causes the cursor to be moved 1 position back.
                    That is a problem only when the field is full e.g. it contains a 2 digit number. Therefore we move
                    the cursor 1 position forward. */
                 if(atoi(field_str) > 10) form_driver(settings_form, REQ_NEXT_CHAR);
 
-                form_driver(settings_form, REQ_DEL_CHAR);
-                form_driver(settings_form, REQ_PREV_CHAR);
+                // Delete the last letter
+                if(strlen(field_str) == FLD_LEN || strcmp(field_str, "") == 0) {
+                    form_driver(settings_form, REQ_DEL_CHAR);
+                }else {
+                    // these 2 separate lines are needed because otherwise we move to a different field
+                    form_driver(settings_form, REQ_PREV_CHAR);
+                    form_driver(settings_form, REQ_DEL_CHAR);
+                }
                 break;
 
             case 10:  // Enter key (validate input)
@@ -173,7 +180,6 @@ static char *take_field_input(int fld_index, char *err_msg,
                     wattroff(settings_menu_win, A_UNDERLINE);
                     wattroff(settings_menu_win, COLOR_PAIR(5));
                     to_refresh = 1;
-
                 }
                 break;
 
@@ -199,7 +205,7 @@ static char *take_field_input(int fld_index, char *err_msg,
                 }else {
                     first_num = '1';
                 }
-                if(key >= first_num && key <= '9') form_driver(settings_form, key);     // this check is sometimes needed
+                if(key >= first_num && key <= '9') form_driver(settings_form, key);  // check if the key is valid
                 break;
         }
 
@@ -278,8 +284,8 @@ void gameSettings(int *letters, int *rounds) {
 	settings_fields[fld_count] = NULL;
 
     // Field settings
-    set_field_type(settings_fields[0], TYPE_INTEGER, 0, 2, 26);     // SOMETIMES DOESN'T WORK
-    set_field_type(settings_fields[1], TYPE_INTEGER, 0, 1, 99);     // SOMETIMES DOESN'T WORK
+    set_field_type(settings_fields[0], TYPE_INTEGER, 0, 2, 26);     // WORKS PARTIALLY
+    set_field_type(settings_fields[1], TYPE_INTEGER, 0, 1, 99);     // WORKS PARTIALLY
 
     field_opts_off(settings_fields[0], O_AUTOSKIP);
     field_opts_off(settings_fields[1], O_AUTOSKIP);
@@ -348,8 +354,7 @@ void gameSettings(int *letters, int *rounds) {
                         /* Letters field */
 
                         field_str = take_field_input(curr_item_index, "Invalid! Letters are from 2 to 26.",
-                                                    settings_menu_win, settings_form, settings_fields,
-                                                    num_of_items);
+                                                    settings_menu_win, settings_form, settings_fields, num_of_items);
 
                         // Change the settings in the file (only if they have changed!)
                         if(atoi(field_str) != *letters) change_settings(atoi(field_str), 0);
@@ -359,8 +364,7 @@ void gameSettings(int *letters, int *rounds) {
 						/* Rounds field */
 
                         field_str = take_field_input(curr_item_index, "Invalid! Rounds are from 1 to 99.",
-                                                    settings_menu_win, settings_form, settings_fields,
-                                                    num_of_items);
+                                                    settings_menu_win, settings_form, settings_fields, num_of_items);
 
                         // Change the settings in the file (only if they have changed!)
                         if(atoi(field_str) != *letters) change_settings(0, atoi(field_str));
