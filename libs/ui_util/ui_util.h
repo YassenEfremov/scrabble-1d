@@ -1,13 +1,12 @@
 /* UI utility functions */
 
-#include <menu.h>
-#include <form.h>
-
+#ifndef UI_UTIL_H		// Include guard
+#define UI_UTIL_H
 
 /* ============================================================================================= */
 
-#ifndef UI_UTIL_H		// Include guard
-#define UI_UTIL_H
+#include <menu.h>
+#include <form.h>
 
 /* --------------------------------------------------------------------------------------------- */
 /* UI element macros */

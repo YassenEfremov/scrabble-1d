@@ -1,14 +1,12 @@
 /* Functions for interacting with the dictionary files and trie structure */
 
-
-#include <stdio.h>
-#include <json-glib/json-glib.h>
-
+#ifndef DICT_HANDLING_H		// Include guard
+#define DICT_HANDLING_H
 
 /* ============================================================================================= */
 
-#ifndef DICT_HANDLING_H		// Include guard
-#define DICT_HANDLING_H
+#include <stdio.h>
+#include <json-glib/json-glib.h>
 
 /* --------------------------------------------------------------------------------------------- */
 /* Utility functions */

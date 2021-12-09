@@ -150,6 +150,7 @@ static char *take_field_input(int fld_index, char *err_msg,
 
                 // Delete the last letter
                 if(strlen(field_str) == FLD_LEN || strcmp(field_str, "") == 0) {
+                    form_driver(settings_form, REQ_NEXT_CHAR);  // without this line sometimes we delete the previous letter
                     form_driver(settings_form, REQ_DEL_CHAR);
                 }else {
                     // these 2 separate lines are needed because otherwise we move to a different field
