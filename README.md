@@ -1,6 +1,6 @@
-<p align="center">
+<div align="center">
   <img alt="Scrabble 1D - ncurses" src="https://user-images.githubusercontent.com/48584741/132108460-fd350d2d-3701-4cd6-adbe-f6ed216168a5.png">
-</p>
+</div>
 
 # Scrabble 1D
 [![GitHub release](https://img.shields.io/github/release/YassenEfremov/scrabble-1d)](https://github.com/YassenEfremov/scrabble-1d/releases/)
@@ -17,8 +17,9 @@ The word is checked in a **dictionary** (a file with all the valid words).
 
 You can add your own **words** and customise the number of **random letters** and **rounds** in a game!
 
-## How to install
-**Note**: The game is **only** supported on **Linux**.
+## Installation
+> [!NOTE]
+> The game is **only** supported on **Linux**.
 
 ### 1. Install from AUR
 If you're using an Arch based Linux distribution you can get the game from the **Arch User Repository** [here](https://aur.archlinux.org/packages/scrabble-1d/)!
